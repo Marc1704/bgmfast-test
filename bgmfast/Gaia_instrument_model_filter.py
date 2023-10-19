@@ -4,6 +4,7 @@ Gaia instrument model filter
 This script is intended to apply the Gaia instrument error model (https://www.cosmos.esa.int/web/gaia/science-performance) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
 '''
 
+
 import pandas as pd
 import numpy as np
 from astropy.io import fits
