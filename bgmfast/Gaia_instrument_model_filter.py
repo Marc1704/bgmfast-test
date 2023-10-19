@@ -1,5 +1,5 @@
 '''
-Gaia_instrument_model_filter.py
+Gaia instrument model filter
 
 This script is intended to apply the Gaia instrument error model (https://www.cosmos.esa.int/web/gaia/science-performance) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
 '''
@@ -104,7 +104,7 @@ class Gaia_instrument_model:
 
     def __init__(self, filename, fileformat='fits', all_magnitudes=True, colnames=['G', 'BP_RP', 'Parallax'], T_factor=1):
         '''
-        Import the Mother Simulation file containing the magnitudes not affected of errors
+        Import the Mother Simulation file
 
         Input parameters
         ----------------
@@ -184,7 +184,7 @@ class Gaia_instrument_model:
 
     def save(self, output_file, columns='all'):
         '''
-        Save as a CSV file a pandas dataframe
+        Save a pandas dataframe as a CSV file
 
         Input parameters
         ----------------
