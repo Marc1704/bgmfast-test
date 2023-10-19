@@ -8,7 +8,6 @@ from astropy.io import fits
 from astropy.table import Table
 import pandas as pd
 import numpy as np
-import sys
 
 class set_input_for_bgmfast:
     '''
