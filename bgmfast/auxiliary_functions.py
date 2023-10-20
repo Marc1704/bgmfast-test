@@ -175,11 +175,11 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
     imassmax = smass + 0.025
 
     if x1<=smass<x2:
-        imf = (NK1*(imassmax**(-alpha1 + 2) - ((imassmin)**(-alpha1 + 2)))/(-alpha1 + 2))
+        imf = (K1*(imassmax**(-alpha1 + 2) - ((imassmin)**(-alpha1 + 2)))/(-alpha1 + 2))
     elif x2<=smass<=x3:
-        imf = (NK2*(imassmax**(-alpha2 + 2) - ((imassmin)**(-alpha2 + 2)))/(-alpha2 + 2))
+        imf = (K2*(imassmax**(-alpha2 + 2) - ((imassmin)**(-alpha2 + 2)))/(-alpha2 + 2))
     elif smass>x3:
-        imf = (NK3*(((imassmax)**(-alpha3 + 2)) - ((imassmin)**(-alpha3 + 2)))/(-alpha3 + 2))
+        imf = (K3*(((imassmax)**(-alpha3 + 2)) - ((imassmin)**(-alpha3 + 2)))/(-alpha3 + 2))
 
     # Notice the result is divided by bin_nor as Sigma_all/bin_nor is Sigma_primal
     if itau==4 or itau==5:
@@ -353,7 +353,7 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     I2_s = integrate.quad(f2,x2,x3)
     I3_s = integrate.quad(f3,x3,x4)
 
-    integral = NK1*I1_s[0] + NK2*I2_s[0] + NK3*I3_s[0]
+    integral = K1*I1_s[0] + K2*I2_s[0] + K3*I3_s[0]
     integralout = (SigmaParam[itau]/sum(SigmaParam))*integral
 
     return integralout
