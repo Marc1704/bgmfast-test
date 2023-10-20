@@ -83,10 +83,10 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     IYS_complete : int --> bin number in the M_G' discretized space given even in the case of being outside the first range of M_G'
     '''
 
-    XS = float(S[1]) # Color Bp-Rp
-    lS = float(S[2]) # Longitude
-    bS = float(S[3]) # Latitude
-    YS = float(S[4]) # M_G' magnitude
+    XS = float(S[0]) # Color Bp-Rp
+    lS = float(S[1]) # Longitude
+    bS = float(S[2]) # Latitude
+    YS = float(S[3]) # M_G' magnitude
 
     # Checking that the values are inside the desired limits
     if (Ymin<=YS<Ymax and Bmin<=bS<=Bmax and Lmin<=lS<=Lmax):
@@ -153,14 +153,14 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
     x1 : int or float --> minimum mass to generate a star
     x2 : int or float --> first mass limit of the IMF
     x3 : int or float --> second mass limit of the IMF
-    K1 : int or float --> first continuity coeficient
-    K2 : int or float --> second continuity coeficient
-    K3 : int or float --> third continuity coeficient
+    K1 : int or float --> first continuity coeficient of the IMF
+    K2 : int or float --> second continuity coeficient of the IMF
+    K3 : int or float --> third continuity coeficient of the IMF
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF
     SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc
-    bin_nor : int or float -->
+    bin_nor : int or float --> normalization coeficient for binaries
     midpopbin : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr)
     lastpopbin : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr)
     imidpoptau : int --> corresponding index of the midpopbin list
@@ -253,7 +253,7 @@ def Omega_func(m, itau, tau_min_edges, tau_max_edges):
 
     taumin = tau_min_edges[itau]*10**9
     taumax = tau_max_edges[itau]*10**9
-    Omega_interv = Omega_func_aux2(taumax,taumin,m)
+    Omega_interv = Omega_func_aux2(taumax, taumin, m)
 
     return Omega_interv
 
@@ -330,9 +330,9 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     x2 : int or float --> first mass limit of the IMF
     x3 : int or float --> second mass limit of the IMF
     x4 : int or float --> maximum mass of a star
-    K1 : int or float --> first continuity coeficient
-    K2 : int or float --> second continuity coeficient
-    K3 : int or float --> third continuity coeficient
+    K1 : int or float --> first continuity coeficient of the IMF
+    K2 : int or float --> second continuity coeficient of the IMF
+    K3 : int or float --> third continuity coeficient of the IMF
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF
@@ -370,9 +370,9 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
     x2 : int or float --> first mass limit of the IMF
     x3 : int or float --> second mass limit of the IMF
     x4 : int or float --> maximum mass of a star
-    K1 : int or float --> first continuity coeficient
-    K2 : int or float --> second continuity coeficient
-    K3 : int or float --> third continuity coeficient
+    K1 : int or float --> first continuity coeficient of the IMF
+    K2 : int or float --> second continuity coeficient of the IMF
+    K3 : int or float --> third continuity coeficient of the IMF
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF

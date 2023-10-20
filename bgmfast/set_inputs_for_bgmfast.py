@@ -9,6 +9,7 @@ from astropy.table import Table
 import pandas as pd
 import numpy as np
 
+
 class set_input_for_bgmfast:
     '''
     Set the Mother Simulation file ready for BGM FASt
