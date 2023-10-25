@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: astroabc
+Version: 1.5.0
+Summary: A Python implementation of an Approximate Bayesian Computation Sequential Monte Carlo (ABC SMC) sampler for parameter estimation.
+Home-page: https://github.com/EliseJ/astroABC
+Author: Elise Jennings
+Author-email: elise.jennings@gmail.com 
+License: MIT
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Scientific/Engineering
+Requires: NumPy (>=2.7)
+
+
+Approximate Bayesian computation (ABC) and so 
+called "likelihood free" Markov chain Monte Carlo 
+techniques are popular methods for tackling parameter 
+inference in scenarios where the likelihood is intractable or unknown. 
+These methods are called likelihood free as they are free from 
+the usual assumptions about the form of the likelihood e.g. Gaussian, 
+as ABC aims to simulate samples from the parameter posterior distribution directly.
+``astroABC`` is a python package that implements  
+an Approximate Bayesian Computation Sequential Monte Carlo (ABC SMC) sampler 
+as a python class. It is extremely flexible and applicable to a large suite of problems. 
+``astroABC`` requires ``NumPy``,``SciPy`` and ``sklearn``. ``mpi4py`` and ``multiprocessing`` are optional.
+
+
