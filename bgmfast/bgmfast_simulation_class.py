@@ -10,7 +10,7 @@ from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
 
 from bgmfast.auxiliary_functions import *
-from bgmfast import parameters
+from bgmfast.parameters import *
 
 
 class MatrixAccumulatorParam(AccumulatorParam):
