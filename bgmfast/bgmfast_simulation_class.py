@@ -288,7 +288,7 @@ class bgmfast_simulation:
         '''
 
         print('=======================================================================')
-        print('\n******************* Welcome to BGM FASt version 0.0.1 *******************\n')
+        print('\n******************* Welcome to BGM FASt version 0.0.2 *******************\n')
         print('=======================================================================')
 
         pass
@@ -313,133 +313,210 @@ class bgmfast_simulation:
         return self.sc, self.spark
 
 
-    def set_acc_parameters(self):
+    def set_acc_parameters(self,
+                           nLonbins=acc_parameters['nLonbins'].value,
+                           nLatbins=acc_parameters['nLatbins'].value, nColorbins=acc_parameters['nColorbins'].value, nGbins=acc_parameters['nGbins'].value, nLonbins1=acc_parameters['nLonbins1'].value, nLatbins1=acc_parameters['nLatbins1'].value, nColorbins1=acc_parameters['nColorbins1'].value, nGbins1=acc_parameters['nGbins1'].value, nLonbins2=acc_parameters['nLonbins2'].value, nLatbins2=acc_parameters['nLatbins2'].value, nColorbins2=acc_parameters['nColorbins2'].value, nGbins2=acc_parameters['nGbins2'].value):
 
         '''
         Set accumulators parameters
+
+        Input parameters
+        ----------------
+        nLonbins : int --> number of bins in longitude of the complete sample
+        nLatbins : int --> number of bins in latitude of the complete sample
+        nColorbins : int --> number of bins in Bp-Rp color of the complete sample
+        nGbins : int --> number of bins in M_G' magnitude of the complete sample
+        nLonbins1 : int --> number of bins in longitude for the first range of M_G'
+        nLatbins1 : int --> number of bins in latitude for the first range of M_G'
+        nColorbins1 : int --> number of bins in Bp-Rp color for the first range of M_G'
+        nGbins1 : int --> number of bins in M_G' magnitude for the first range of M_G'
+        nLonbins2 : int --> number of bins in longitude for the second range of M_G'
+        nLatbins2 : int --> number of bins in latitude for the second range of M_G'
+        nColorbins2 : int --> number of bins in Bp-Rp colour for the second range of M_G'
+        nGbins2 : int --> number of bins in M_G' magnitude for the second range of M_G'
         '''
 
         print('\nSetting accumulators parameters...\n')
 
         acc_parameters = parameters.acc_parameters
 
-        self.nLonbins = acc_parameters['nLonbins'].value
-        self.nLatbins = acc_parameters['nLatbins'].value
-        self.nColorbins = acc_parameters['nColorbins'].value
-        self.nGbins = acc_parameters['nGbins'].value
-        self.nLonbins1 = acc_parameters['nLonbins1'].value
-        self.nLatbins1 = acc_parameters['nLatbins1'].value
-        self.nColorbins1 = acc_parameters['nColorbins1'].value
-        self.nGbins1 = acc_parameters['nGbins1'].value
-        self.nLonbins2 = acc_parameters['nLonbins2'].value
-        self.nLatbins2 = acc_parameters['nLatbins2'].value
-        self.nColorbins2 = acc_parameters['nColorbins2'].value
-        self.nGbins2 = acc_parameters['nGbins2'].value
+        self.nLonbins = nLonbins
+        self.nLatbins = nLatbins
+        self.nColorbins = nColorbins
+        self.nGbins = nGbins
+        self.nLonbins1 = nLonbins1
+        self.nLatbins1 = nLatbins1
+        self.nColorbins1 = nColorbins1
+        self.nGbins1 = nGbins1
+        self.nLonbins2 = nLonbins2
+        self.nLatbins2 = nLatbins2
+        self.nColorbins2 = nColorbins2
+        self.nGbins2 = nGbins2
         self.MatrixAccumulatorParam = MatrixAccumulatorParam
 
 
-    def set_binning_parameters(self):
+    def set_binning_parameters(self,
+                               Xmin=binning_parameters['Xmin'].value, Xmax=binning_parameters['Xmax'].value, Ymin=binning_parameters['Ymin'].value, Ymax=binning_parameters['Ymax'].value, Bmin=binning_parameters['Bmin'].value, Bmax=binning_parameters['Bmax'].value, Lmin=binning_parameters['Lmin'].value, Lmax=binning_parameters['Lmax'].value, blims=binning_parameters['blims'].value, llims=binning_parameters['llims'].value, Ylims=binning_parameters['Ylims'].value, Ylims_Xsteps=binning_parameters['Ylims_Xsteps'].value, Ylims_Ysteps=binning_parameters['Ylims_Ysteps'].value):
 
         '''
         Set binning parameters
+
+        Input parameters
+        ----------------
+        Xmin : int or float --> minimum value for the binning in Bp-Rp range
+        Xmax : int or float --> maximum value for the binning Bp-Rp range
+        Ymin : int or float --> minimum value for the binning M_G' range
+        Ymax : int or float --> maximum value for the binning M_G' range
+        Bmin : int or float --> minimum value for the binning of latitude
+        Bmax : int or float --> maximum value for the binning of latitude
+        Lmin : int or float --> minimum value for the binning of longitude
+        Lmax : int or float --> maximum value for the binning of longitude
+        blims : list --> limits of the latitude in the different M_G' ranges
+        llims : list --> limits of the longitude in the different M_G' ranges
+        Ylims : list --> limits of the Bp-Rp colour in the different M_G' ranges
+        Ylims_Xsteps : list --> Bp-Rp steps of the different Bp-Rp colour ranges
+        Ylims_Ysteps : list --> M_G' steps of the different Bp-Rp colour ranges
         '''
 
         print('\nSetting binning parameters...\n')
 
         binning_parameters = parameters.binning_parameters
 
-        self.Xmin = binning_parameters['Xmin'].value
-        self.Xmax = binning_parameters['Xmax'].value
-        self.Ymin = binning_parameters['Ymin'].value
-        self.Ymax = binning_parameters['Ymax'].value
-        self.Bmin = binning_parameters['Bmin'].value
-        self.Bmax = binning_parameters['Bmax'].value
-        self.Lmin = binning_parameters['Lmin'].value
-        self.Lmax = binning_parameters['Lmax'].value
-        self.blims = binning_parameters['blims'].value
-        self.llims = binning_parameters['llims'].value
-        self.Ylims = binning_parameters['Ylims'].value
-        self.Ylims_Xsteps = binning_parameters['Ylims_Xsteps'].value
-        self.Ylims_Ysteps = binning_parameters['Ylims_Ysteps'].value
+        self.Xmin = Xmin
+        self.Xmax = Xmax
+        self.Ymin = Ymin
+        self.Ymax = Ymax
+        self.Bmin = Bmin
+        self.Bmax = Bmax
+        self.Lmin = Lmin
+        self.Lmax = Lmax
+        self.blims = blims
+        self.llims = llims
+        self.Ylims = Ylims
+        self.Ylims_Xsteps = Ylims_Xsteps
+        self.Ylims_Ysteps = Ylims_Ysteps
 
 
-    def set_general_parameters(self):
+    def set_general_parameters(self,
+                               x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value, ThickParamYoung=general_parameters['ThickParamYoung'].value, ThickParamOld=general_parameters['ThickParamOld'].value, HaloParam=general_parameters['HaloParam'].value):
 
         '''
         Set general parameters
+
+        Input parameters
+        ----------------
+        x1 : int or float --> minimum mass to generate a star
+        x4 : int or float --> maximum mass to generate a star
+        tau_min_edges : list --> lower limits of the age subpopulations of the thin disc
+        tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
+        ThickParamYoung : int or float --> weight of the young thick disc stars
+        ThickParamOld : int or float --> weight of the old thick disc stars
+        HaloParam : int or float --> weight of the halo stars
         '''
 
         print('\nSetting general parameters...\n')
 
         general_parameters = parameters.general_parameters
 
-        self.x1 = general_parameters['x1'].value
-        self.x4 = general_parameters['x4'].value
-        self.tau_min_edges = general_parameters['tau_min_edges'].value
-        self.tau_max_edges = general_parameters['tau_max_edges'].value
-        self.ThickParamYoung = general_parameters['ThickParamYoung'].value
-        self.ThickParamOld = general_parameters['ThickParamOld'].value
-        self.HaloParam = general_parameters['HaloParam'].value
+        self.x1 = x1
+        self.x4 = x4
+        self.tau_min_edges = tau_min_edges
+        self.tau_max_edges = tau_max_edges
+        self.ThickParamYoung = ThickParamYoung
+        self.ThickParamOld = ThickParamOld
+        self.HaloParam = HaloParam
 
 
-    def set_ms_parameters(self):
+    def set_ms_parameters(self,
+                          x2_ms=ms_parameters['x2_ms'].value, x3_ms=ms_parameters['x3_ms'].value, alpha1_ms=ms_parameters['alpha1_ms'].value, alpha2_ms=ms_parameters['alpha2_ms'].value, alpha3_ms=ms_parameters['alpha3_ms'].value, SigmaParam_ms=ms_parameters['SigmaParam_ms'].value, midpopbin_ms=ms_parameters['midpopbin_ms'].value, lastpopbin_ms=ms_parameters['lastpopbin_ms'].value):
 
         '''
         Set Mother Simulation parameters
+
+        Input parameters
+        ----------------
+        x2_ms : int or float --> first mass limit of the IMF for the Mother Simulation
+        x3_ms : int or float --> second mass limit of the IMF for the Mother Simulation
+        alpha1_ms : int or float --> first slope (alpha) of the IMF for the Mother Simulation
+        alpha2_ms : int or float --> second slope (alpha) of the IMF for the Mother Simulation
+        alpha3_ms : int or float --> third slope (alpha) of the IMF for the Mother Simulation
+        SigmaParam_ms : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the Mother Simulation
+        midpopbin_ms : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the Mother Simulation
+        lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation
         '''
 
         print('\nSetting Mother Simulation parameters...\n')
 
         ms_parameters = parameters.ms_parameters
 
-        self.x2_ms = ms_parameters['x2_ms'].value
-        self.x3_ms = ms_parameters['x3_ms'].value
-        self.alpha1_ms = ms_parameters['alpha1_ms'].value
-        self.alpha2_ms = ms_parameters['alpha2_ms'].value
-        self.alpha3_ms = ms_parameters['alpha3_ms'].value
-        self.SigmaParam_ms = ms_parameters['SigmaParam_ms'].value
-        self.midpopbin_ms = ms_parameters['midpopbin_ms'].value
-        self.lastpopbin_ms = ms_parameters['lastpopbin_ms'].value
+        self.x2_ms = x2_ms
+        self.x3_ms = x3_ms
+        self.alpha1_ms = alpha1_ms
+        self.alpha2_ms = alpha2_ms
+        self.alpha3_ms = alpha3_ms
+        self.SigmaParam_ms = SigmaParam_ms
+        self.midpopbin_ms = midpopbin_ms
+        self.lastpopbin_ms = lastpopbin_ms
 
         self.K1_ms, self.K2_ms, self.K3_ms = Continuity_Coeficients_func(self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.x1, self.x2_ms, self.x3_ms, self.x4)
 
         self.bin_nor_ms = bin_nor_func(self.x1, self.x2_ms, self.x3_ms, self.x4, self.K1_ms, self.K2_ms, self.K3_ms, self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.SigmaParam_ms, self.tau_min_edges, self.tau_max_edges)
 
 
-    def set_ps_parameters(self):
+    def set_ps_parameters(self,
+                          x2_ps=ps_parameters['x2_ps'].value, x3_ps=ps_parameters['x3_ps'].value):
 
         '''
         Set Pseudo Simulation (BGM FASt) parameters
+
+        Input parameters
+        ----------------
+        x2_ps : int or float --> first mass limit of the IMF for the BGM FASt simulation
+        x3_ps : int or float --> second mass limit of the IMF for the BGM FASt simulation
         '''
 
         print('\nSetting BGMFASt simulation (pseudo-simulation) parameters...\n')
 
         ps_parameters = parameters.ps_parameters
 
-        self.x2_ps = ps_parameters['x2_ps'].value
-        self.x3_ps = ps_parameters['x3_ps'].value
+        self.x2_ps = x2_ps
+        self.x3_ps = x3_ps
 
 
-    def set_constraints_parameters(self):
+    def set_constraints_parameters(self,
+                                   tau_min=constraints_parameters['tau_min'].value, tau_max=constraints_parameters['tau_max'].value, mass_min=constraints_parameters['mass_min'].value, mass_max=constraints_parameters['mass_max'].value, l_min=constraints_parameters['l_min'].value, l_max=constraints_parameters['l_max'].value, b_min=constraints_parameters['b_min'].value, b_max=constraints_parameters['b_max'].value, r_min=constraints_parameters['r_min'].value, r_max=constraints_parameters['r_max'].value):
 
         '''
         Set stars constraints parameters
+
+        Input parameters
+        ----------------
+        tau_min : int or float --> minimum age of a thin disc star
+        tau_max : int or float --> maximum age of a thin disc star
+        mass_min : int or float --> minimum mass to generate a star
+        mass_max : int or float --> maximum mass to generate a star
+        l_min : int or float --> minimum Galactic longitude
+        l_max : int or float --> maximum Galactic longitude
+        b_min : int or float --> minimum Galactic latitude
+        b_max : int or float --> maximum Galactic latitude
+        r_min : int or float --> minimum distance
+        r_max : int or float --> maximum distance
         '''
 
         print('\nSetting constraints parameters...\n')
 
         constraints_parameters = parameters.constraints_parameters
 
-        self.tau_min = constraints_parameters['tau_min'].value
-        self.tau_max = constraints_parameters['tau_max'].value
-        self.mass_min = constraints_parameters['mass_min'].value
-        self.mass_max = constraints_parameters['mass_max'].value
-        self.l_min = constraints_parameters['l_min'].value
-        self.l_max = constraints_parameters['l_max'].value
-        self.b_min = constraints_parameters['b_min'].value
-        self.b_max = constraints_parameters['b_max'].value
-        self.r_min = constraints_parameters['r_min'].value
-        self.r_max = constraints_parameters['r_max'].value
+        self.tau_min = tau_min
+        self.tau_max = tau_max
+        self.mass_min = mass_min
+        self.mass_max = mass_max
+        self.l_min = l_min
+        self.l_max = l_max
+        self.b_min = b_min
+        self.b_max = b_max
+        self.r_min = r_min
+        self.r_max = r_max
 
 
     def read_catalog(self, filename, sel_columns, Gmax):
