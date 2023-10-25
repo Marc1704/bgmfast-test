@@ -10,7 +10,7 @@ from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
 
 from bgmfast.auxiliary_functions import *
-from bgmfast.parameters import *
+from bgmfast.parameters import acc_parameters, binning_parameters, general_parameters, ms_parameters, ps_parameters, constraints_parameters
 
 
 class MatrixAccumulatorParam(AccumulatorParam):
@@ -338,8 +338,6 @@ class bgmfast_simulation:
 
         print('\nSetting accumulators parameters...\n')
 
-        acc_parameters = parameters.acc_parameters
-
         self.nLonbins = nLonbins
         self.nLatbins = nLatbins
         self.nColorbins = nColorbins
@@ -380,8 +378,6 @@ class bgmfast_simulation:
 
         print('\nSetting binning parameters...\n')
 
-        binning_parameters = parameters.binning_parameters
-
         self.Xmin = Xmin
         self.Xmax = Xmax
         self.Ymin = Ymin
@@ -416,8 +412,6 @@ class bgmfast_simulation:
 
         print('\nSetting general parameters...\n')
 
-        general_parameters = parameters.general_parameters
-
         self.x1 = x1
         self.x4 = x4
         self.tau_min_edges = tau_min_edges
@@ -447,8 +441,6 @@ class bgmfast_simulation:
 
         print('\nSetting Mother Simulation parameters...\n')
 
-        ms_parameters = parameters.ms_parameters
-
         self.x2_ms = x2_ms
         self.x3_ms = x3_ms
         self.alpha1_ms = alpha1_ms
@@ -477,8 +469,6 @@ class bgmfast_simulation:
 
         print('\nSetting BGMFASt simulation (pseudo-simulation) parameters...\n')
 
-        ps_parameters = parameters.ps_parameters
-
         self.x2_ps = x2_ps
         self.x3_ps = x3_ps
 
@@ -504,8 +494,6 @@ class bgmfast_simulation:
         '''
 
         print('\nSetting constraints parameters...\n')
-
-        constraints_parameters = parameters.constraints_parameters
 
         self.tau_min = tau_min
         self.tau_max = tau_max
