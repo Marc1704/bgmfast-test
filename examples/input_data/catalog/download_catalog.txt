@@ -1,0 +1,4 @@
+The catalog file used in the examples can be download from the following link: https://drive.google.com/file/d/19eCRlUDHOwmOnrkHmhPjhAQR4VkPkTJ4/view?usp=sharing
+
+This catalog has been downloaded directly from the Gaia archive and it corresponds to Gaia DR3 up to magnitude G=13. 
+
