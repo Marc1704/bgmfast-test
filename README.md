@@ -23,6 +23,11 @@ $ pip uninstall bgmfast
 ```
 and then come back again with the installation.
 
+Once installed the BGM FASt package, to be able to run some of the examples it is necessary to run--probably as a sudo--the move_astroabc.py script, which moves the astroABC Python package to the correct location. To do so, you just download the move_astroabc.py code and run
+```
+sudo python move_astroabc.py
+```
+
 ### Dependencies
 
 The following dependencies are required for the basic Python package:
