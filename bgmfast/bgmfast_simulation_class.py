@@ -738,13 +738,14 @@ class bgmfast_simulation:
             bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
 
             start = time.time()
-            datetime_now = str(datetime.datetime.now())
+            current_datetime = datetime.datetime.now()
+            formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
             self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple))
 
             end = time.time()
             self.num_sim += 1
-            print(str(self.num_sim) + ',' + datetime_now + ',' + str(end - start))
+            print(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)))
 
             self.acc_complete = acc_complete
             self.acc = acc
