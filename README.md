@@ -41,6 +41,9 @@ In addition, to execute the examples are also required the following Python pack
 
 ## Examples
 
+Together with the Python package there are [some examples](https://github.com/Marc1704/bgmfast-test/tree/main/examples) on the usage of BGM FASt. The recommended example pipeline is the following one:
+1.
+
 ## License
 
 Copyright 2023 Marc del Alcázar i Julià

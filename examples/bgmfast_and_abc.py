@@ -6,13 +6,18 @@ This script is an example on how to run BGM FASt together with ABC to derive the
 '''
 
 # ***************
+# GENERAL IMPORTS
+# ***************
+
+import astroabc
+
+# ***************
 # BGMFAST IMPORTS
 # ***************
 
 from bgmfast import parameters
 from bgmfast.auxiliary_functions import *
 from bgmfast.bgmfast_simulation_class import bgmfast_simulation
-from bgmfast import astroabc
 
 # *****************
 # PARAMETERS IMPORT

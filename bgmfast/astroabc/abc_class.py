@@ -166,8 +166,8 @@ class ABC_class(object):
                         methods from instances of Prior class which allow sample to generate rvs
                         using self.prior() and  pdf(number) using self.priorprob(number)
                 '''
-                self.prior = np.empty(self.nparam,dtype=np.object)
-                self.priorprob = np.empty(self.nparam,dtype=np.object)
+                self.prior = np.empty(self.nparam,dtype=object)
+                self.priorprob = np.empty(self.nparam,dtype=object)
                 for i,p in enumerate(priors):
                         pcls = Prior_class(p[0],p[1])
                         self.prior[i] = np.vectorize(pcls.prior)
