@@ -6,6 +6,7 @@ This script is intented to include all the functions working within the Pyspark 
 
 
 import numpy as np
+import time, datetime
 from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
 
@@ -288,8 +289,10 @@ class bgmfast_simulation:
         '''
 
         print('=======================================================================')
-        print('\n******************* Welcome to BGM FASt version 0.0.2 *******************\n')
+        print('\n****************** Welcome to BGM FASt version 0.0.2 ******************\n')
         print('=======================================================================')
+
+        self.num_sim = 0
 
         pass
 
@@ -734,7 +737,14 @@ class bgmfast_simulation:
             K1_ps,K2_ps,K3_ps = Continuity_Coeficients_func(alpha1_ps, alpha2_ps, alpha3_ps, x1, x2_ps, x3_ps, x4)
             bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
 
+            start = time.time()
+            datetime_now = str(datetime.datetime.now())
+
             self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple))
+
+            end = time.time()
+            self.num_sim += 1
+            print(self.num_sim + ',' + datetime_now + ',' + end - start)
 
             self.acc_complete = acc_complete
             self.acc = acc
