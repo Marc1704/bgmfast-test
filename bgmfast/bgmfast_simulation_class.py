@@ -744,7 +744,7 @@ class bgmfast_simulation:
 
             end = time.time()
             self.num_sim += 1
-            print(self.num_sim + ',' + datetime_now + ',' + str(end - start))
+            print(str(self.num_sim) + ',' + datetime_now + ',' + str(end - start))
 
             self.acc_complete = acc_complete
             self.acc = acc
