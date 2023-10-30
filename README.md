@@ -23,31 +23,37 @@ $ pip uninstall bgmfast
 ```
 and then come back again with the installation.
 
-Once installed the BGM FASt package, to be able to run some of the examples it is necessary to run--probably as a sudo--the move_astroabc.py script, which moves the astroABC Python package to the correct location. To do so, you just download the move_astroabc.py code and run
+Once installed the BGM FASt package, it is important to move the astroABC package inside BGM FASt to the correct path to be able to import it from the example scripts. To do so, you can just run the move_astroabc.py script as follows:
+```
+python move_astroabc.py
+```
+If permission problems arise, try executing the same code as a sudo: 
 ```
 sudo python move_astroabc.py
 ```
 
 ### Dependencies
 
-The following dependencies are required for the basic Python package:
-* numpy
-* scipy
-* pyspark
+The following dependencies are required to run the code and the examples:
 * pandas
+* numpy
 * astropy
+* pyspark
+* scikit-learn
 
-In addition, to execute the examples are also required the following Python packages:
-* os
-* global
-* mpi4py (for astroABC)
-* multiprocessing (for astroABC)
-* sklearn (for astroABC)
 
 ## Examples
 
-Together with the Python package there are [some examples](https://github.com/Marc1704/bgmfast-test/tree/main/examples) on the usage of BGM FASt. The recommended example pipeline is the following one:
-1.
+Together with the Python package are given [some examples](https://github.com/Marc1704/bgmfast-test/tree/main/examples) on the usage of BGM FASt. The recommended example pipeline is the following one:
+
+(0. If the MS file is provided in different files use join_ms_files.py to build a single MS file.)
+
+1. set_catalog_for_bgmfast.py --> this script allows to adequate the format of the file obtained from the Gaia DR3 archive for BGM FASt.
+2. set_ms_for_bgmfast.py --> this script is intended to adequate the format of the MS file for BGM FASt as well as computing the absolute magnitude and the PopBin.
+3. bgmfast_single_run.py --> with this script you will be able to run BGM FASt for the first time and compute the distance with respect to the catalog data given a set of parameters. 
+4. bgmfast_and_abc.py --> this script will let you iteratively run BGM FASt with ABC to derive Galactic parameters. 
+
+Must be noted that this pipeline is just for testing the code, and proper modifictations of the input parameters must be done before obtaining scientific outcomes.
 
 ## License
 
