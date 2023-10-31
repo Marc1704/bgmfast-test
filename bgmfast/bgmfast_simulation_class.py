@@ -298,7 +298,7 @@ class bgmfast_simulation:
 
         if self.logfile!=False:
             self.logs = open(logfile, 'w')
-            self.logs.write('simulation_number,foreach_initialization_datetime,foreach_duration')
+            self.logs.write('simulation_number,foreach_initialization_datetime,foreach_duration\n')
 
         pass
 
