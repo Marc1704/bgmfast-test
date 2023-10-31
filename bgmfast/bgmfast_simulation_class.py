@@ -6,7 +6,8 @@ This script is intented to include all the functions working within the Pyspark 
 
 
 import numpy as np
-import time, datetime
+import time
+from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
 
@@ -283,7 +284,7 @@ class bgmfast_simulation:
     Run the BGM FASt simulations
     '''
 
-    def __init__(self):
+    def __init__(self, logfile=str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))+'_bgmfast.log'):
         '''
         Initialize the bgmfast_simulation class
         '''
@@ -293,6 +294,11 @@ class bgmfast_simulation:
         print('=======================================================================')
 
         self.num_sim = 0
+        self.logfile = logfile
+
+        if logfile!=False:
+            logs = open(logfile, 'w')
+            logs.write('simulation_number,foreach_initialization_datetime,foreach_duration')
 
         pass
 
@@ -738,14 +744,16 @@ class bgmfast_simulation:
             bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
 
             start = time.time()
-            current_datetime = datetime.datetime.now()
+            current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
             self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple))
 
             end = time.time()
             self.num_sim += 1
-            print(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)))
+
+            if self.logfile!=False:
+                logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
 
             self.acc_complete = acc_complete
             self.acc = acc
