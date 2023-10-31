@@ -6,7 +6,7 @@ This script is intented to include all the functions working within the Pyspark 
 
 
 import numpy as np
-import time
+import time, psutil
 from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
@@ -302,7 +302,7 @@ class bgmfast_simulation:
 
         if self.logfile!=False:
             self.logs = open(logfile, 'w')
-            self.logs.write('simulation_number,foreach_initialization_datetime,foreach_duration\n')
+            self.logs.write('simulation_number,foreach_initialization_datetime,foreach_duration,foreach_process_duration,cpu_usage\n')
 
         pass
 
@@ -748,16 +748,18 @@ class bgmfast_simulation:
             bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
 
             start = time.time()
+            start_process = time.process_time()
             current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
             self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple))
 
             end = time.time()
+            end_process = time.process_time()
             self.num_sim += 1
 
             if self.logfile!=False:
-                self.logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
+                self.logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + ',' + str(round(end_process - start_process, 2)) + ',' + str(psutil.getloadavg()[0]) + '\n')
 
             self.acc_complete = acc_complete
             self.acc = acc
