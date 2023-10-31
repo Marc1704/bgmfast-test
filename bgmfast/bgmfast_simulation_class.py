@@ -287,6 +287,10 @@ class bgmfast_simulation:
     def __init__(self, logfile=str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))+'_bgmfast.log'):
         '''
         Initialize the bgmfast_simulation class
+
+        Input parameters
+        ----------------
+        logfile : str --> directory of the log file
         '''
 
         print('=======================================================================')
