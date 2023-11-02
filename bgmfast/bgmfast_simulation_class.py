@@ -284,7 +284,7 @@ class bgmfast_simulation:
     Run the BGM FASt simulations
     '''
 
-    def __init__(self, logfile=str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))+'_bgmfast.log'):
+    def __init__(self, logfile=str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))+'_bgmfast_sim.log'):
         '''
         Initialize the bgmfast_simulation class
 

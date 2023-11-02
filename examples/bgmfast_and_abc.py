@@ -52,8 +52,9 @@ output_file = "./bgmfast_and_abc_output_file.txt"
 #Create a bgmfast_simulation class object
 bgmfast_sim = bgmfast_simulation()
 
-#Open Spark session
+#Open Spark session and avoid INFO logs
 sc, spark = bgmfast_sim.open_spark_session()
+spark.sparkContext.setLogLevel("WARN")
 
 #Set parameters for the BGM FASt simulation
 bgmfast_sim.set_acc_parameters()
