@@ -301,8 +301,8 @@ class bgmfast_simulation:
         self.logfile = logfile
 
         if self.logfile!=False:
-            self.logs = open(logfile, 'w')
-            self.logs.write('simulation_number,foreach_initialization_datetime,foreach_duration,foreach_process_duration,cpu_usage\n')
+            with open(logfile, 'w') as logs:
+                logs.write('simulation_number,foreach_initialization_datetime,foreach_duration,foreach_process_duration,cpu_usage\n')
 
         pass
 
@@ -757,7 +757,8 @@ class bgmfast_simulation:
             self.num_sim += 1
 
             if self.logfile!=False:
-                self.logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
+                with open(self.logfile, 'a') as logs:
+                    logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
 
             self.acc_complete = acc_complete
             self.acc = acc
