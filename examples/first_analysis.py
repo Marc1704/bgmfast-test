@@ -15,4 +15,8 @@ catalog_cmd, catalog_data = comparison.generate_catalog_hess_diagram(filename_ca
 
 ms_cmd, ms_data = comparison.generate_catalog_hess_diagram(filename_ms, colnames_ms, Gmax_ms)
 
+distance_cmd, difference_cmd, quocient_cmd = comparison.generate_difference_hess_diagram(catalog_cmd, ms_cmd)
+
 distance = comparison.compute_distance(catalog_data, ms_data)
+
+comparison.build_hess_diagrams_plots(catalog_cmd, ms_cmd, distance_cmd, difference_cmd, quocient_cmd)
