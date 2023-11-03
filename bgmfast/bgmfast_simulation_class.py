@@ -290,7 +290,7 @@ class bgmfast_simulation:
 
         Input parameters
         ----------------
-        logfile : str --> directory of the log file
+        logfile : str or False --> directory of the log file
         '''
 
         print('=======================================================================')
@@ -528,7 +528,7 @@ class bgmfast_simulation:
         Input parameters
         ----------------
         filename : str --> directory of the catalog file. Example: /home/username/bgmfast/inputs/gaiaDR3_G13.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file
+        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, Bp-Rp, longitude, latitude, M_G' and parallax
         Gmax : int or float --> limitting magnitude
 
         Output parameters
@@ -539,10 +539,10 @@ class bgmfast_simulation:
         print('\nReading the catalog file...\n')
 
         spark = self.spark
-
+        
         catalog = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.catalog = catalog.filter((catalog.G<Gmax) & (catalog.parallax!='') & (catalog.parallax>0) & (catalog.BpRp!=''))
-
+        self.catalog = catalog.filter((catalog[sel_columns[0]]<Gmax) & (catalog[sel_columns[5]]!='') & (catalog[sel_columns[5]]>0) & (catalog[sel_columns[1]]!=''))
+        
         return self.catalog
 
 
@@ -554,7 +554,7 @@ class bgmfast_simulation:
         Input parameters
         ----------------
         filename : str --> directory of the Mother Simulation file. Example: /home/username/bgmfast/inputs/ms_G13_errors_bgmfast.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file
+        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, Bp-Rp, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
         Gmax : int or float --> limitting magnitude
 
         Output parameters
@@ -567,7 +567,7 @@ class bgmfast_simulation:
         spark = self.spark
 
         Mother_Simulation_DFa = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa.Gerr<Gmax) & (Mother_Simulation_DFa.parallaxerr>0))
+        self.Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa[sel_columns[0]]<Gmax) & (Mother_Simulation_DFa[sel_columns][7]>0))
 
         self.Mother_Simulation_DF.cache() # Checking that the file is correct
 
