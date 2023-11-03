@@ -1,5 +1,6 @@
 import numpy as np
 import subprocess
+from datetime import datetime
 
 def write_to_file(t,outfile,nparam,npart,theta,delta,wgt):
         '''Method to write sampler outputs to txt file
@@ -14,6 +15,7 @@ def write_to_file(t,outfile,nparam,npart,theta,delta,wgt):
         '''
         if t==0:
                 f = open(outfile,'w')
+                f.write("step_completed_datetime \t")
                 for ncount in range(nparam):
                         f.write("param#%s \t "%ncount)
                 f.write("dist \t  wgt \n")
@@ -25,6 +27,8 @@ def write_to_file(t,outfile,nparam,npart,theta,delta,wgt):
         wgts= wgt.flatten().reshape(npart,1)
         output = np.hstack((data,dists,wgts))
         for o in output:
+                datetime_now = str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))
+                f.write(datetime_now + " \t")
                 for indv in o:
                         f.write("%f \t" % indv)
                 f.write("\n")
