@@ -43,7 +43,7 @@ with open(output_file, 'w') as logsfile:
     logsfile.write('datetime,running_processes,load_avg_1_min,load_avg_5_min,load_avg_15_min,ram_used,ram_used_percent,disk_used,disk_used_percent,active_interface,packet_send,packet_receive\n')
 
 while True:
-    datetime_now = str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))
+    datetime_now = str(datetime.now().strftime("%Y-%m-%dT%H:%M:%S"))
     pidTotal = len(psutil.pids())
     load_avgs = [round(loadavg, 2) for loadavg in os.getloadavg()]
     memUsed = round(psutil.virtual_memory()[3]/gb, 2)
