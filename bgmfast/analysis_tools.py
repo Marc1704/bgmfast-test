@@ -54,6 +54,7 @@ class compare_hess_diagrams:
         ----------------
         catalog1_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the first catalog
         catalog2_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the second catalog
+        Note: when comparing data with simulations, according to Eq. (58) of Mor et al. 2018, catalog1 corresponds to the simulation and catalog2 to the data. 
         
         Output parameters
         -----------------
@@ -70,9 +71,9 @@ class compare_hess_diagrams:
         return distance_cmd, difference_cmd, quocient_cmd
     
     
-    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, quocient_cmd, output=False, show=True, titles=['Catalog 1', 'Catalog 2', r'$\delta_P$(Catalog 2, Catalog 1)', 'Catalog 2 - Catalog 1', 'Catalog 2/Catalog 1'], limits='auto'):
+    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, quocient_cmd, output=False, show=True, titles=['Catalog 2', 'Catalog 1', r'$\delta_P$(Catalog 1, Catalog 2)', 'Catalog 1 - Catalog 2', 'Catalog 1/Catalog 2'], limits='auto'):
         '''
-        Buil the Hess diagrams of two catalogs and their differences
+        Build the Hess diagrams of two catalogs and their differences
         
         Input parameters
         ----------------
@@ -154,13 +155,13 @@ class compare_hess_diagrams:
                     axs[lat, col].axhline(5, color='black', lw=0.5)
 
                     if col==0:
-                        CMD = np.log10(catalog1_cmd[lon][lat]).T
+                        CMD = np.log10(catalog2_cmd[lon][lat]).T
                         norm_hess = colors.Normalize(vmin=0, vmax=np.log10(limits_hess))
                         hess_catalog = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap, aspect="auto", norm=norm_hess)
                         hess_catalog.set_clim(0, np.log10(limits_hess))
 
                     elif col==1:
-                        CMD = np.log10(catalog2_cmd[lon][lat]).T
+                        CMD = np.log10(catalog1_cmd[lon][lat]).T
                         norm_hess = colors.Normalize(vmin=0, vmax=np.log10(limits_hess))
                         hess_bgmfast = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap, aspect="auto", norm=norm_hess)
                         hess_bgmfast.set_clim(0, np.log10(limits_hess))
