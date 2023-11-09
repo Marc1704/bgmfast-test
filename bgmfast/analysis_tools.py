@@ -3,6 +3,7 @@ from bgmfast.auxiliary_functions import *
 from bgmfast import parameters
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import pandas as pd
 
 
 class compare_hess_diagrams:
@@ -83,7 +84,7 @@ class compare_hess_diagrams:
         output : str or False --> directory of the output file of the plot
         show : boolean --> wether you want the plot to be displayed or not
         titles : list --> titles of the five different columns of the plot
-        limits : list or 'auto' --> limits of the plots in each one of the five columns
+        limits : list or 'auto' --> upper limits of the plots in each one of the four colour bars or set to 'auto'
         '''
 
         acc_parameters = parameters.acc_parameters
@@ -119,7 +120,7 @@ class compare_hess_diagrams:
             if limits[2]=='auto':
                 limits_diff = max([abs(np.quantile(difference_cmd, 0.01)), abs(np.quantile(difference_cmd, 0.99))])
             else:
-                limits_diff = limits[2] #OJO! A corregir!
+                limits_diff = limits[2] 
             if limits[3]=='auto':
                 max_lim = max([abs(np.log10(np.quantile(quocient_cmd, 0.01))), abs(np.log10(np.quantile(quocient_cmd, 0.99)))])
             else:
@@ -221,5 +222,49 @@ class compare_hess_diagrams:
         print('\nDistance between catalogs: %f\n' %distance)
 
         return distance
+    
+    
+def cmd_to_bins_table(bgmfast_cmd, output_file):
+    '''
+    Convert a Hess diagram into a table with the values of the bins 
+    
+    Input parameters
+    ----------------
+    bgmfast_cmd : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges
+    output_file : str --> directory of the output file of the plot
+    
+    Output parameters
+    -----------------
+    df : Pandas DataFrame --> table with the values of the bins
+    '''
+    
+    binning_parameters = parameters.binning_parameters
+    bprp_steps = binning_parameters['Ylims_Xsteps'].value[0]
+    bprp_min = binning_parameters['Xmin'].value
+    mvarpi_steps = binning_parameters['Ylims_Ysteps'].value[0]
+    mvarpi_min = binning_parameters['Ymin'].value
+
+    longitudes = []
+    latitudes = []
+    bprps = []
+    mvarpis = []
+    nums_stars = []
+    for lon in range(len(bgmfast_cmd)):
+        for lat in range(len(bgmfast_cmd[lon])):
+            for bprp in range(len(bgmfast_cmd[lon][lat])):
+                for mvarpi in range(len(bgmfast_cmd[lon][lat][bprp])):
+                    longitudes.append(lon)
+                    latitudes.append(lat)
+                    bprps.append(bprp_min + bprp*bprp_steps + bprp_steps/2)
+                    mvarpis.append(mvarpi_min + mvarpi*mvarpi_steps + mvarpi_steps/2)
+                    nums_stars.append(bgmfast_cmd[lon][lat][bprp][mvarpi])
+                    
+    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis, 'num_stars': nums_stars}
+    df = pd.DataFrame(data)
+    
+    if output_file!=False:
+        df.to_csv(output_file, index=False)
+    
+    return df
 
 
