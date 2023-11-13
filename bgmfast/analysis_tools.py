@@ -54,6 +54,7 @@ class compare_hess_diagrams:
         ----------------
         catalog1_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the first catalog
         catalog2_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the second catalog
+        Note: when comparing simulations and observed data, catalog 1 refers to the simulation and catalog 2 to the data according to Eq. (58) from Mor et al. 2018 for the computation of the distance. 
         
         Output parameters
         -----------------
@@ -70,14 +71,15 @@ class compare_hess_diagrams:
         return distance_cmd, difference_cmd, quocient_cmd
     
     
-    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, quocient_cmd, output=False, show=True, titles=['Catalog 1', 'Catalog 2', r'$\delta_P$(Catalog 2, Catalog 1)', 'Catalog 2 - Catalog 1', 'Catalog 2/Catalog 1'], limits='auto'):
+    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, quocient_cmd, output=False, show=True, titles=['Catalog 1', 'Catalog 2', r'$\delta_P$(Catalog 1, Catalog 2)', 'Catalog 1 - Catalog 2', 'Catalog 1/Catalog 2'], limits='auto'):
         '''
-        Buil the Hess diagrams of two catalogs and their differences
+        Build the Hess diagrams of two catalogs and their differences
         
         Input parameters
         ----------------
         catalog1_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the first catalog
         catalog2_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram of the second catalog
+        Note: when comparing simulations and observed data, catalog 1 refers to the simulation and catalog 2 to the data according to Eq. (58) from Mor et al. 2018 for the computation of the distance
         distance_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the distance per bin of the complete Hess diagrams between catalogs
         difference_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the absolute difference in number of stars per bin of the complete Hess diagrams between catalogs
         quocient_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the quocient of the number of stars per bin of the complete Hess diagrams between catalogs
@@ -204,7 +206,7 @@ class compare_hess_diagrams:
             plt.show()
 
 
-    def compute_distance(self, catalog1_data, catalog2_data):
+    def compute_distance(self, catalog2_cmd, catalog1_cmd):
         '''
         Compute the metric distance between two catalogs
         
@@ -212,13 +214,14 @@ class compare_hess_diagrams:
         ----------------
         catalog1_cmd : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges for the first catalog
         catalog2_cmd : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges for the second catalog
+        Note: when comparing simulations and observed data, catalog 1 refers to the simulation and catalog 2 to the data according to Eq. (58) from Mor et al. 2018 for the computation of the distance
         
         Output parameters
         -----------------
         distance : float --> value of the metric distance between the catalogs
         '''
 
-        distance = dist_metric_gdaf2(catalog1_data, catalog2_data)
+        distance = dist_metric_gdaf2(catalog2_cmd, catalog1_cmd)
         print('\nDistance between catalogs: %f\n' %distance)
 
         return distance
@@ -248,7 +251,7 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     latitudes = []
     bprps = []
     mvarpis = []
-    nums_stars = []
+    counts = []
     for lon in range(len(bgmfast_cmd)):
         for lat in range(len(bgmfast_cmd[lon])):
             for bprp in range(len(bgmfast_cmd[lon][lat])):
@@ -257,9 +260,9 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
                     latitudes.append(lat)
                     bprps.append(bprp_min + bprp*bprp_steps + bprp_steps/2)
                     mvarpis.append(mvarpi_min + mvarpi*mvarpi_steps + mvarpi_steps/2)
-                    nums_stars.append(bgmfast_cmd[lon][lat][bprp][mvarpi])
+                    counts.append(bgmfast_cmd[lon][lat][bprp][mvarpi])
                     
-    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis, 'num_stars': nums_stars}
+    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis, 'counts': counts}
     df = pd.DataFrame(data)
     
     if output_file!=False:
