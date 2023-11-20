@@ -679,8 +679,6 @@ class bgmfast_simulation:
         simulation_data : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges
         '''
 
-        global acc_complete, acc, acc2, simple # this line should not be necessary
-
         sc = self.sc
         MatrixAccumulatorParam = self.MatrixAccumulatorParam
 
