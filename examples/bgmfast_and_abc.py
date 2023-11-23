@@ -63,6 +63,7 @@ bgmfast_sim.set_general_parameters()
 bgmfast_sim.set_ms_parameters()
 bgmfast_sim.set_ps_parameters()
 bgmfast_sim.set_constraints_parameters()
+bgmfast_sim.set_bgmfast_parameters()
 
 #Generate catalog Hess diagram
 bgmfast_sim.read_catalog(filename_catalog, sel_columns_catalog, Gmax_catalog)

@@ -6,13 +6,13 @@ This script is intented to include all the functions working within the Pyspark 
 
 
 import numpy as np
-import time
+import time, sys
 from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
 
 from bgmfast.auxiliary_functions import *
-from bgmfast.parameters import acc_parameters, binning_parameters, general_parameters, ms_parameters, ps_parameters, constraints_parameters
+from bgmfast.parameters import acc_parameters, binning_parameters, general_parameters, ms_parameters, ps_parameters, constraints_parameters, bgmfast_parameters
 
 
 class MatrixAccumulatorParam(AccumulatorParam):
@@ -518,6 +518,31 @@ class bgmfast_simulation:
         self.b_max = b_max
         self.r_min = r_min
         self.r_max = r_max
+        
+    
+    def set_bgmfast_parameters(self,
+                            free_params=bgmfast_parameters['free_params'].value,
+                            fixed_params=bgmfast_parameters['fixed_params'].value):
+        
+        '''
+        Set the values of the BGM FASt parameters that are fixed and the positions in the input list for run_simulation function of the BGM FASt parameters that are free
+        
+        Input parameters
+        ----------------
+        free_params : dict --> dictionary with the names of the free parameters as keys and the position in the list of free parameters as values
+        fixed_params : dict --> dictionary with the names of the fixed parameters and their values
+        '''
+        
+        print('\nSetting free and fixed BGM FASt parameters...\n')
+        
+        self.all_params = {}
+        for param, value in fixed_params.items():
+            self.all_params[param] = ['fixed', value] 
+        for param, position in free_params.items():
+            if param in self.all_params.keys():
+                print('A parameter cannot be fixed and free at the same time')
+                sys.exit()
+            self.all_params[param] = ['free', position]
 
 
     def read_catalog(self, filename, sel_columns, Gmax):
@@ -734,10 +759,81 @@ class bgmfast_simulation:
         acc_complete, acc, acc2, simple = self.accumulators_init()
 
         # Explored parameters
-        alpha1_ps, alpha2_ps, alpha3_ps = param[0:3]
-        SigmaParam_ps = np.array([param[3], param[4], param[5], param[6], param[7]+param[8], param[9]+param[10], param[11]+param[12]+param[13]])
-        midpopbin_ps = np.array(param[7:11])
-        lastpopbin_ps = np.array(param[11:14])
+        for key, value in self.all_params.items():
+            if key=='alpha1':
+                if value[0]=='free':
+                    alpha1_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    alpha1_ps = value[1]
+            elif key=='alpha2':
+                if value[0]=='free':
+                    alpha2_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    alpha2_ps = value[1]
+            elif key=='alpha3':
+                if value[0]=='free':
+                    alpha3_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    alpha3_ps = value[1]
+            elif key=='sfh1':
+                if value[0]=='free':
+                    sfh1_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh1_ps = value[1]
+            elif key=='sfh2':
+                if value[0]=='free':
+                    sfh2_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh2_ps = value[1]
+            elif key=='sfh3':
+                if value[0]=='free':
+                    sfh3_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh3_ps = value[1]
+            elif key=='sfh4':
+                if value[0]=='free':
+                    sfh4_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh4_ps = value[1]
+            elif key=='sfh5':
+                if value[0]=='free':
+                    sfh5_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh5_ps = value[1]
+            elif key=='sfh6':
+                if value[0]=='free':
+                    sfh6_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh6_ps = value[1]
+            elif key=='sfh7':
+                if value[0]=='free':
+                    sfh7_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh7_ps = value[1]
+            elif key=='sfh8':
+                if value[0]=='free':
+                    sfh8_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh8_ps = value[1]
+            elif key=='sfh9':
+                if value[0]=='free':
+                    sfh9_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh9_ps = value[1]
+            elif key=='sfh10':
+                if value[0]=='free':
+                    sfh10_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh10_ps = value[1]
+            elif key=='sfh11':
+                if value[0]=='free':
+                    sfh11_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    sfh11_ps = value[1]
+        
+        SigmaParam_ps = np.array([sfh1_ps, sfh2_ps, sfh3_ps, sfh4_ps, sfh5_ps + sfh6_ps, sfh7_ps + sfh8_ps, sfh9_ps + sfh10_ps + sfh11_ps])
+        midpopbin_ps = np.array([sfh5_ps, sfh6_ps, sfh7_ps, sfh8_ps])
+        lastpopbin_ps = np.array([sfh9_ps, sfh10_ps, sfh11_ps])
 
         # If some surface mass density is negative, then Lr='inf' and we redraw again
         if SigmaParam_ps[SigmaParam_ps<0].size==0 and ThickParamYoung>0 and ThickParamOld>0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0:
