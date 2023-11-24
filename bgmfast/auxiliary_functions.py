@@ -7,6 +7,7 @@ This script includes a set of functions that are needed to make BGM FASt work.
 
 import numpy as np
 import scipy.integrate as integrate
+from bgmfast import parameters
 
 
 def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
@@ -396,8 +397,60 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
 
 # **********************************************
 
+def compute_bin_quotient(H_t_bin, H0_bin, thresh=parameters.distance_parameters['dist_thresh'].value):
+    '''
+    Compute the quotient in a given bin of two Hess diagrams
+    
+    Input parameters
+    ----------------
+    H_t_bin : int or float --> number of counts in the given catalog bin
+    H0_bin : int or float --> number of counts in the given simulation bin
+    thresh : int or float --> minimum threshold for the number of stars per bin in the catalog to consider that bin for the computation of the distance. Set the threshold to -1 to deactivate the threshold
+    
+    Output parameters
+    -----------------
+    quot_bin : float --> quotient in the bin between the catalog and the simulation
+    '''
+    
+    if H_t_bin<thresh:
+        quot_bin = 1
+    elif H_t_bin==0 or H0_bin==0:
+        quot_bin = (H0_bin + 1)/(H_t_bin + 1)
+    else:
+        quot_bin = H0_bin/H_t_bin
+    
+    return quot_bin
 
-def dist_metric_gdaf2(H_t, HO):
+
+def compute_bin_distance(H_t_bin, H0_bin, thresh=parameters.distance_parameters['dist_thresh'].value):
+    
+    '''
+    Compute the distance metric in a given bin of two Hess diagrams
+    
+    Input parameters
+    ----------------
+    H_t_bin : int or float --> number of counts in the given catalog bin
+    H0_bin : int or float --> number of counts in the given simulation bin
+    thresh : int or float --> minimum threshold for the number of stars per bin in the catalog to consider that bin for the computation of the distance. Set the threshold to -1 to deactivate the threshold
+    
+    Output parameters
+    -----------------
+    dist_bin : float --> distance in the bin between the catalog and the simulation
+    '''
+    
+    if H_t_bin<thresh:
+        dist_bin = 0
+    elif H_t_bin==0 or H0_bin==0:
+        R_bin = compute_bin_quotient(H_t_bin, H0_bin, thresh)
+        dist_bin = (H_t_bin + 1)*(1 - R_bin + np.log(R_bin)) 
+    else:
+        R_bin = compute_bin_quotient(H_t_bin, H0_bin, thresh)
+        dist_bin = H_t_bin*(1 - R_bin + np.log(R_bin))
+    
+    return dist_bin
+
+
+def dist_metric_gdaf2(H_t, HO, thresh=parameters.distance_parameters['dist_thresh'].value):
 
     '''
     Computation of the distance metric to be used in the ABC code. We use the so-called Poissonian distance. The expression can be found in the Equation (58) from Mor et al. 2018.
@@ -406,6 +459,7 @@ def dist_metric_gdaf2(H_t, HO):
     ----------------
     H_t : 4-dimensional accumulator -->  catalog data in the 4-dimensional space (Hess diagram + latitude + longitude) used as a summary statistics
     H0 : 4-dimensional accumulator --> simulation data in the 4-dimensional space (Hess diagram + latitude + longitude) used as a summary statistics
+    thresh : int or float --> minimum threshold for the number of stars per bin in the catalog to consider that bin for the computation of the distance. Set the threshold to -1 to deactivate the threshold
 
     Output parameters
     -----------------
@@ -416,7 +470,7 @@ def dist_metric_gdaf2(H_t, HO):
         lrout = np.inf
 
     else:
-        Lrb = [(i*(1.-(j/i)+ np.log(j/i))) if j!=0 and i!=0 else ((i+1)*(1.-((j+1)/(i+1))+ np.log((j+1)/(i+1))))  for i,j in zip(H_t, HO)]
+        Lrb = [compute_bin_distance(i, j, thresh) for i,j in zip(H_t, HO)]
 
         lrout = np.abs(sum(Lrb))
         if np.isnan(lrout):

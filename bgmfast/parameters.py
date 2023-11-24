@@ -193,6 +193,13 @@ fixed_params = new_param('fixed_params', {}, info='Dictionary with the names of 
 bgmfast_parameters = {**free_params.outdict(), **fixed_params.outdict()}
 
 
+#Parameters for the distance metric
+
+dist_thresh = new_param('dist_thresh', -1, info='Minimum threshold for the number of stars per bin in the catalog to consider that bin for the computation of the distance. Set the threshold to -1 to deactivate the threshold')
+
+distance_parameters = {**dist_thresh.outdict()}
+
+
 
 
 

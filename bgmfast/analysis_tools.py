@@ -64,8 +64,10 @@ class compare_hess_diagrams:
         
         '''
         
-        quocient_cmd = np.array([[[[catalog1_cmd[lon][lat][i][j]/catalog2_cmd[lon][lat][i][j] if catalog1_cmd[lon][lat][i][j]!=0 and catalog2_cmd[lon][lat][i][j]!=0 else (catalog1_cmd[lon][lat][i][j] + 1)/(catalog2_cmd[lon][lat][i][j] + 1) for j in range(len(catalog1_cmd[lon][lat][i]))] for i in range(len(catalog1_cmd[lon][lat]))] for lat in range(len(catalog1_cmd[lon]))] for lon in range(len(catalog1_cmd))])
-        distance_cmd = np.array([[[[catalog2_cmd[lon][lat][i][j]*(1 - quocient_cmd[lon][lat][i][j] + np.log(quocient_cmd[lon][lat][i][j])) for j in range(len(quocient_cmd[lon][lat][i]))] for i in range(len(quocient_cmd[lon][lat]))] for lat in range(len(quocient_cmd[lon]))] for lon in range(len(quocient_cmd))])
+        quocient_cmd = np.array([[[[compute_bin_quotient(catalog2_cmd[lon][lat][i][j], catalog1_cmd[lon][lat][i][j]) for j in range(len(catalog1_cmd[lon][lat][i]))] for i in range(len(catalog1_cmd[lon][lat]))] for lat in range(len(catalog1_cmd[lon]))] for lon in range(len(catalog1_cmd))])
+        
+        distance_cmd = np.array([[[[compute_bin_distance(catalog2_cmd[lon][lat][i][j], catalog1_cmd[lon][lat][i][j]) for j in range(len(quocient_cmd[lon][lat][i]))] for i in range(len(quocient_cmd[lon][lat]))] for lat in range(len(quocient_cmd[lon]))] for lon in range(len(quocient_cmd))])
+        
         difference_cmd = catalog1_cmd - catalog2_cmd
         
         return distance_cmd, difference_cmd, quocient_cmd
@@ -233,7 +235,7 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     
     Input parameters
     ----------------
-    bgmfast_cmd : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges
+    bgmfast_cmd : numpy array or list --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges. It is also possible to put different numpy arrays in a list 
     output_file : str --> directory of the output file of the plot
     
     Output parameters
@@ -247,22 +249,34 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     mvarpi_steps = binning_parameters['Ylims_Ysteps'].value[0]
     mvarpi_min = binning_parameters['Ymin'].value
 
+    if not isinstance(bgmfast_cmd, list):
+        bgmfast_cmd = [bgmfast_cmd]
+    
+    counts = []
+    for i in range(len(bgmfast_cmd)):
+        counts.append([])
+    
     longitudes = []
     latitudes = []
     bprps = []
     mvarpis = []
-    counts = []
-    for lon in range(len(bgmfast_cmd)):
-        for lat in range(len(bgmfast_cmd[lon])):
-            for bprp in range(len(bgmfast_cmd[lon][lat])):
-                for mvarpi in range(len(bgmfast_cmd[lon][lat][bprp])):
+    for lon in range(len(bgmfast_cmd[0])):
+        for lat in range(len(bgmfast_cmd[0][lon])):
+            for bprp in range(len(bgmfast_cmd[0][lon][lat])):
+                for mvarpi in range(len(bgmfast_cmd[0][lon][lat][bprp])):
                     longitudes.append(lon)
                     latitudes.append(lat)
                     bprps.append(bprp_min + bprp*bprp_steps + bprp_steps/2)
                     mvarpis.append(mvarpi_min + mvarpi*mvarpi_steps + mvarpi_steps/2)
-                    counts.append(bgmfast_cmd[lon][lat][bprp][mvarpi])
+                    for i in range(len(bgmfast_cmd)):
+                        counts[i].append(bgmfast_cmd[i][lon][lat][bprp][mvarpi])
                     
-    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis, 'counts': counts}
+    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis}
+    if len(bgmfast_cmd)==1:
+        data['counts'] = counts[0]
+    else:
+        for i in range(len(bgmfast_cmd)):
+            data['counts' + str(i)] = counts[i]
     df = pd.DataFrame(data)
     
     if output_file!=False:
