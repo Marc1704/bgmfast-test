@@ -64,14 +64,28 @@ bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms)
 # RUNNING BGMFAST SIMULATION WITH FIXED PARAMETERS
 # ************************************************
 
-#Input parameters of BGM FASt: three slopes of the IMF and 11 SFH parameters (from the execution GV13-MS22 in the TFM that can be found in latest_results folder)
-param = [-1.88, 2.76, 1.85, 0.84*0.15, 3.23*0.85, 6.06*1, 9.79*1, 6.74*1, 6.33*1, 2.51*1, 4.52*1, 3.92*1, 1.87*1, 6.44*1]
+#Input parameters of BGM FASt: three slopes of the IMF and 11 SFH parameters (we put the values of the Mother Simulation, just for testing)
+ms_params = parameters.ms_parameters 
+param = [ms_params['alpha1_ms'].value,
+         ms_params['alpha2_ms'].value,
+         ms_params['alpha3_ms'].value,
+         ms_params['SigmaParam_ms'].value[0],
+         ms_params['SigmaParam_ms'].value[1],
+         ms_params['SigmaParam_ms'].value[2],
+         ms_params['SigmaParam_ms'].value[3],
+         ms_params['midpopbin_ms'].value[0],
+         ms_params['midpopbin_ms'].value[1],
+         ms_params['midpopbin_ms'].value[2],
+         ms_params['midpopbin_ms'].value[3],
+         ms_params['lastpopbin_ms'].value[0],
+         ms_params['lastpopbin_ms'].value[1],
+         ms_params['lastpopbin_ms'].value[2]]
 
 #Run the BGM FASt simulation for the given parameters
 simulation_data = bgmfast_sim.run_simulation(param)
 
 #Compute the distance between catalog and simulation Hess diagrams
-print('Distance for the parameters derived in GV13-MS22:', dist_metric_gdaf2(catalog_data, simulation_data))
+print('Distance for the parameters in the Mother Simulation:', dist_metric_gdaf2(catalog_data, simulation_data))
 
 #End the Spark session
 spark.stop()
