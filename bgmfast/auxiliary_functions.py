@@ -90,14 +90,14 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     YS = float(S[3]) # M_G' magnitude
 
     # Checking that the values are inside the desired limits
-    if (Ymin<=YS<Ymax and Bmin<=bS<=Bmax and Lmin<=lS<=Lmax):
+    if (Ymin<=YS<=Ymax and Bmin<=bS<=Bmax and Lmin<=lS<=Lmax):
 
         for blim, i in zip(blims, range(len(blims))):
-            if blim[0]<abs(bS)<=blim[1]:
+            if blim[0]<=abs(bS)<=blim[1]:
                 IBS = i
 
         for llim, i in zip(llims, range(len(llims))):
-            if llim[0]<abs(lS)<=llim[1]:
+            if llim[0]<=abs(lS)<=llim[1]:
                 ILS = i
 
         #for Ylim, i in zip(Ylims, range(len(Ylims))):
@@ -107,11 +107,11 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
                 #IYS = int((YS - Ylim[1])/Ylims_Ysteps[i])
                 #IXS = int((XS - Xmin)/Ylims_Xsteps[i])
 
-        if Ylims[1][0]<YS<Ylims[1][1]:
+        if Ylims[1][0]<=YS<=Ylims[1][1]:
             IYS = int((YS - Ylims[1][0])/Ylims_Ysteps[1])
             IXS = int((XS - Xmin)/Ylims_Xsteps[1])
 
-        elif Xmin<=XS<Xmax:
+        elif Xmin<=XS<=Xmax:
             if Ylims[0][0]<YS<Ylims[0][1]:
                 IYS = int((YS - Ylims[0][0])/Ylims_Ysteps[0])
                 IXS = int((XS - Xmin)/Ylims_Xsteps[0])
