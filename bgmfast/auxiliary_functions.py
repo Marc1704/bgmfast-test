@@ -90,7 +90,7 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     YS = float(S[3]) # M_G' magnitude
 
     # Checking that the values are inside the desired limits
-    if (Ymin<=YS<=Ymax and Bmin<=bS<=Bmax and Lmin<=lS<=Lmax):
+    if (Ymin<=YS<Ymax and Bmin<=bS<=Bmax and Lmin<=lS<=Lmax and Xmin<=XS<Xmax):
 
         for blim, i in zip(blims, range(len(blims))):
             if blim[0]<=abs(bS)<=blim[1]:
@@ -106,15 +106,13 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
             #if Ylim[0]<YS<=Ylim[1]:
                 #IYS = int((YS - Ylim[1])/Ylims_Ysteps[i])
                 #IXS = int((XS - Xmin)/Ylims_Xsteps[i])
-
-        if Ylims[1][0]<=YS<=Ylims[1][1]:
+        
+        if Ylims[0][0]<=YS<Ylims[0][1]:
+            IYS = int((YS - Ylims[0][0])/Ylims_Ysteps[0])
+            IXS = int((XS - Xmin)/Ylims_Xsteps[0])
+        elif Ylims[1][0]<=YS<Ylims[1][1]:
             IYS = int((YS - Ylims[1][0])/Ylims_Ysteps[1])
             IXS = int((XS - Xmin)/Ylims_Xsteps[1])
-
-        elif Xmin<=XS<=Xmax:
-            if Ylims[0][0]<YS<Ylims[0][1]:
-                IYS = int((YS - Ylims[0][0])/Ylims_Ysteps[0])
-                IXS = int((XS - Xmin)/Ylims_Xsteps[0])
 
         # Giving a value for this stars which is not in the desired ranges
         else:
@@ -123,7 +121,7 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
             IBS = np.nan
             ILS = np.nan
 
-        if np.isnan(IBS) or np.isnan(ILS) or np.isnan(IXS) or np.isnan(IYS) or XS<Xmin or XS>=Xmax:
+        if np.isnan(IBS) or np.isnan(ILS) or np.isnan(IXS) or np.isnan(IYS):
             IYS_complete = np.nan
             IXS_complete = np.nan
         else:
