@@ -27,7 +27,7 @@ def write_to_file(t,outfile,nparam,npart,theta,delta,wgt):
         wgts= wgt.flatten().reshape(npart,1)
         output = np.hstack((data,dists,wgts))
         for o in output:
-                datetime_now = str(datetime.now().strftime("%Y_%m_%dT%H_%M_%S"))
+                datetime_now = str(datetime.now().strftime("%Y-%m-%dT%H:%M:%S"))
                 f.write(datetime_now + " \t")
                 for indv in o:
                         f.write("%f \t" % indv)
