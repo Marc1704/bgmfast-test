@@ -14,5 +14,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["pandas", "numpy", "astropy", "pyspark", "scikit-learn", "psutil", "py-cpuinfo". "corner"],
+    install_requires=["pandas", "numpy", "astropy", "pyspark", "scikit-learn", "psutil", "py-cpuinfo", "corner"],
 )
