@@ -86,6 +86,7 @@ simulation_data = bgmfast_sim.run_simulation(param)
 
 #Compute the distance between catalog and simulation Hess diagrams
 print('Distance for the parameters in the Mother Simulation:', dist_metric_gdaf2(catalog_data, simulation_data))
+#Precisely following this example, you should get a value of distance = 512187.55203569063
 
 #End the Spark session
 spark.stop()
