@@ -566,7 +566,7 @@ class bgmfast_simulation:
         spark = self.spark
         
         catalog = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.catalog = catalog.filter((catalog[sel_columns[0]]<Gmax) & (catalog[sel_columns[5]]!='') & (catalog[sel_columns[5]]>0) & (catalog[sel_columns[1]]!=''))
+        self.catalog = catalog.filter((catalog[sel_columns[0]]<Gmax) & (catalog[sel_columns[5]]!='') & (catalog[sel_columns[5]]>0.0) & (catalog[sel_columns[1]]!=''))
         
         return self.catalog
 
@@ -592,7 +592,7 @@ class bgmfast_simulation:
         spark = self.spark
 
         Mother_Simulation_DFa = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa[sel_columns[0]]<Gmax) & (Mother_Simulation_DFa[sel_columns][7]>0))
+        self.Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa[sel_columns[0]]<Gmax) & (Mother_Simulation_DFa[sel_columns][7]>0.0))
 
         self.Mother_Simulation_DF.cache() # Checking that the file is correct
 
