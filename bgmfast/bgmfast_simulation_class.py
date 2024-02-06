@@ -127,7 +127,7 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     return cpes
 
 
-def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple):
+def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple):
 
     '''
     Compute the weight of a given star. It uses Equation (37) from Mor et al. 2018 without integrating. The integral is conceptual, because it defines the integration over an increment (bin) of the N-dimensional space defined in Eq. (6). We reduce this increment until the end, when we only consider the star itself. At that point, the increment is exactly equal to the differential (both of them are the star itself) and the integral blows up.
@@ -184,8 +184,9 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation
     bin_nor_ms : int or float --> normalization coeficient for binaries for the Mother Simulation
     ThickParamYoung : int or float --> weight of the stars in the Young Thick disc
-    ThickParamOld : int or float --> weight of the stars in the Old Thick disc
     HaloParam : int or float --> weight of the stars in the Halo
+    BarParam : int or float --> weight of the stars in the Bar
+    ThickParamOld : int or float --> weight of the stars in the Old Thick disc
     acc_complete : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
     acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the first considered range of M_G'
     acc2 : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the second considered range of M_G'
@@ -235,6 +236,9 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
 
     elif popbin==9:
         wpes = HaloParam
+
+    elif popbin==10:
+        wpes = BarParam
 
     elif popbin==11:
         wpes = ThickParamOld
@@ -407,7 +411,7 @@ class bgmfast_simulation:
 
 
     def set_general_parameters(self,
-                               x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value, ThickParamYoung=general_parameters['ThickParamYoung'].value, ThickParamOld=general_parameters['ThickParamOld'].value, HaloParam=general_parameters['HaloParam'].value):
+                               x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value, ThickParamYoung=general_parameters['ThickParamYoung'].value, HaloParam=general_parameters['HaloParam'].value, BarParam=general_parameters['BarParam'].value, ThickParamOld=general_parameters['ThickParamOld'].value):
 
         '''
         Set general parameters
@@ -419,8 +423,9 @@ class bgmfast_simulation:
         tau_min_edges : list --> lower limits of the age subpopulations of the thin disc
         tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
         ThickParamYoung : int or float --> weight of the young thick disc stars
-        ThickParamOld : int or float --> weight of the old thick disc stars
         HaloParam : int or float --> weight of the halo stars
+        BarParam : int or float --> weight of the bar stars
+        ThickParamOld : int or float --> weight of the old thick disc stars
         '''
 
         print('\nSetting general parameters...\n')
@@ -430,8 +435,9 @@ class bgmfast_simulation:
         self.tau_min_edges = tau_min_edges
         self.tau_max_edges = tau_max_edges
         self.ThickParamYoung = ThickParamYoung
-        self.ThickParamOld = ThickParamOld
         self.HaloParam = HaloParam
+        self.BarParam = BarParam
+        self.ThickParamOld = ThickParamOld
 
 
     def set_ms_parameters(self,
@@ -715,8 +721,9 @@ class bgmfast_simulation:
         tau_min_edges = self.tau_min_edges
         tau_max_edges = self.tau_max_edges
         ThickParamYoung = self.ThickParamYoung
-        ThickParamOld = self.ThickParamOld
         HaloParam = self.HaloParam
+        BarParam = self.BarParam
+        ThickParamOld = self.ThickParamOld
 
         Xmin = self.Xmin
         Xmax = self.Xmax
@@ -836,7 +843,7 @@ class bgmfast_simulation:
         lastpopbin_ps = np.array([sfh9_ps, sfh10_ps, sfh11_ps])
 
         # If some surface mass density is negative, then Lr='inf' and we redraw again
-        if SigmaParam_ps[SigmaParam_ps<0].size==0 and ThickParamYoung>0 and ThickParamOld>0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0:
+        if SigmaParam_ps[SigmaParam_ps<0].size==0 and ThickParamYoung>0 and HaloParam>0 and BarParam>0 and ThickParamOld>0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0:
 
             K1_ps,K2_ps,K3_ps = Continuity_Coeficients_func(alpha1_ps, alpha2_ps, alpha3_ps, x1, x2_ps, x3_ps, x4)
             bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
@@ -845,7 +852,7 @@ class bgmfast_simulation:
             current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
-            self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, ThickParamOld, HaloParam, acc_complete, acc, acc2, simple))
+            self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple))
 
             end = time.time()
             self.num_sim += 1

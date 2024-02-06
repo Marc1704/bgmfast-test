@@ -126,10 +126,11 @@ x4 = new_param('x4', 120, 'M_Sun', info='Maximum mass to generate a star')
 tau_min_edges = new_param('tau_min_edges', [0, 0.15, 1, 2, 3, 5, 7], 'Gyr', info='Lower limits of the age subpopulations of the thin disc')
 tau_max_edges = new_param('tau_max_edges', [0.15, 1, 2, 3, 5, 7, 10], 'Gyr', info='Upper limits of the age subpopulations of the thin disc')
 ThickParamYoung = new_param('ThickParamYoung', 1, info='Weight of the young thick disc stars')
-ThickParamOld = new_param('ThickParamOld', 1, info='Weight of the old thick disc stars')
 HaloParam = new_param('HaloParam', 1, info='Weight of the halo stars')
+BarParam = new_param('BarParam', 1, info='Weight of the bar stars')
+ThickParamOld = new_param('ThickParamOld', 1, info='Weight of the old thick disc stars')
 
-general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **ThickParamYoung.outdict(), **ThickParamOld.outdict(), **HaloParam.outdict()}
+general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **ThickParamYoung.outdict(), **HaloParam.outdict(), **BarParam.outdict(), **ThickParamOld.outdict()}
 
 
 #Parameters for the Mother Simulation: MS-2306
