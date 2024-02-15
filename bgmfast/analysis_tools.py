@@ -803,14 +803,14 @@ class compare_hess_diagrams:
         pass
 
 
-    def generate_catalog_hess_diagram(self, filename_catalog, colnames=['G','BpRp','longitude','latitude', 'Mvarpi', 'parallax'], Gmax=13.0):
+    def generate_catalog_hess_diagram(self, filename_catalog, colnames=['G','GRp','longitude','latitude', 'Mvarpi', 'parallax'], Gmax=13.0):
         '''
         Generate catalog Hess diagram
         
         Input parameters 
         ----------------
         filename_catalog : str --> directory of the catalog file
-        colnames : list --> list with the name of the columns in the catalog with the following order: G, Bp-Rp, longitude, latitude, M_G' and parallax 
+        colnames : list --> list with the name of the columns in the catalog with the following order: G, G-Rp, longitude, latitude, M_G' and parallax 
         Gmax : int or float --> limitting magnitude
         
         Output parameters
@@ -923,7 +923,7 @@ class compare_hess_diagrams:
                         axs[lat, col].set_ylabel(r"$M_G'$")
 
                     if (lat + 1)==nLatbins:
-                        axs[lat, col].set_xlabel("$Bp-Rp$")
+                        axs[lat, col].set_xlabel("$G-Rp$")
 
                     cmap = plt.cm.jet
                     cmap.set_bad(color="white")
@@ -1025,8 +1025,8 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     '''
     
     binning_parameters = parameters.binning_parameters
-    bprp_steps = binning_parameters['Ylims_Xsteps'].value[0]
-    bprp_min = binning_parameters['Xmin'].value
+    grp_steps = binning_parameters['Ylims_Xsteps'].value[0]
+    grp_min = binning_parameters['Xmin'].value
     mvarpi_steps = binning_parameters['Ylims_Ysteps'].value[0]
     mvarpi_min = binning_parameters['Ymin'].value
 
@@ -1039,20 +1039,20 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     
     longitudes = []
     latitudes = []
-    bprps = []
+    grps = []
     mvarpis = []
     for lon in range(len(bgmfast_cmd[0])):
         for lat in range(len(bgmfast_cmd[0][lon])):
-            for bprp in range(len(bgmfast_cmd[0][lon][lat])):
-                for mvarpi in range(len(bgmfast_cmd[0][lon][lat][bprp])):
+            for grp in range(len(bgmfast_cmd[0][lon][lat])):
+                for mvarpi in range(len(bgmfast_cmd[0][lon][lat][grp])):
                     longitudes.append(lon)
                     latitudes.append(lat)
-                    bprps.append(bprp_min + bprp*bprp_steps + bprp_steps/2)
+                    grps.append(grp_min + grp*grp_steps + grp_steps/2)
                     mvarpis.append(mvarpi_min + mvarpi*mvarpi_steps + mvarpi_steps/2)
                     for i in range(len(bgmfast_cmd)):
-                        counts[i].append(bgmfast_cmd[i][lon][lat][bprp][mvarpi])
+                        counts[i].append(bgmfast_cmd[i][lon][lat][grp][mvarpi])
                     
-    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'bprp_bin': bprps, 'mvarpi_bin': mvarpis}
+    data = {'longitude_bin': longitudes, 'latitude_bin': latitudes, 'grp_bin': grps, 'mvarpi_bin': mvarpis}
     if len(bgmfast_cmd)==1:
         data['counts'] = counts[0]
     else:

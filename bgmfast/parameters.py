@@ -125,12 +125,14 @@ x1 = new_param('x1', 0.015, 'M_Sun', info='Minimum mass to generate a star')
 x4 = new_param('x4', 120, 'M_Sun', info='Maximum mass to generate a star')
 tau_min_edges = new_param('tau_min_edges', [0, 0.15, 1, 2, 3, 5, 7], 'Gyr', info='Lower limits of the age subpopulations of the thin disc')
 tau_max_edges = new_param('tau_max_edges', [0.15, 1, 2, 3, 5, 7, 10], 'Gyr', info='Upper limits of the age subpopulations of the thin disc')
-ThickParamYoung = new_param('ThickParamYoung', 1, info='Weight of the young thick disc stars')
+T_tau_min_edges = new_param('T_tau_min_edges', [8], 'Gyr', info='Lower limit of the age population of the young thick disc')
+T_tau_max_edges = new_param('T_tau_max_edges', [10], 'Gyr', info='Upper limit of the age population of the young thick disc')
+ThickParamYoung = new_param('ThickParamYoung', 'fit', info='Weight of the young thick disc stars')
 HaloParam = new_param('HaloParam', 1, info='Weight of the halo stars')
 BarParam = new_param('BarParam', 1, info='Weight of the bar stars')
 ThickParamOld = new_param('ThickParamOld', 1, info='Weight of the old thick disc stars')
 
-general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **ThickParamYoung.outdict(), **HaloParam.outdict(), **BarParam.outdict(), **ThickParamOld.outdict()}
+general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **T_tau_min_edges.outdict(), **T_tau_max_edges.outdict(), **ThickParamYoung.outdict(), **HaloParam.outdict(), **BarParam.outdict(), **ThickParamOld.outdict()}
 
 
 #Parameters for the Mother Simulation: MS-2306
@@ -145,8 +147,12 @@ H_ms = new_param('H_ms', [129.901627, 361.019562, 469.020203, 556.135254, 663.66
 SigmaParam_ms = new_param('SigmaParam_ms', np.array([i*j for i, j in zip(rho_ms.value, H_ms.value)]), info='Surface density at the position of the Sun for the different age subpopulations of the thin disc for the MS')
 midpopbin_ms = new_param('midpopbin_ms', np.array([rho_ms.value[-3]*H_ms.value[-3]/2, rho_ms.value[-3]*H_ms.value[-3]/2, rho_ms.value[-2]*H_ms.value[-2]/2, rho_ms.value[-2]*H_ms.value[-2]/2]), info='Surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc for the MS (3-5 Gyr and 5-7 Gyr)')
 lastpopbin_ms = new_param('lastpopbin_ms', np.array(3*[rho_ms.value[-1]*H_ms.value[-1]/3]), info='Surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc for the MS (7-10 Gyr)')
+T_rho_ms = new_param('T_rho_ms', [0.00266559026], info='Volume density ath the position of the Sun fo the age population of the young thick disc for the MS')
+T_H_ms = new_param('T_H_ms', [2501.77], info='H value in Eq. (37) in Mor et al. 2018 for the age population of the young thick disc for the MS')
+T_SigmaParam_ms = new_param('T_SigmaParam_ms', np.array([i*j for i, j in zip(T_rho_ms.value, T_H_ms.value)]), info='Surface density at the position of the Sun for the age population of the young thick disc for the MS')
+T_lastpopbin_ms = new_param('T_lastpopbin_ms', np.array(2*[T_rho_ms.value[-1]*T_H_ms.value[-1]/2]), info='Surface density at the position of the Sun for the two subdivision of the age population of the young thick disc (8-9 Gyr and 9-10 Gyr) for the MS')
 
-ms_parameters = {**x2_ms.outdict(), **x3_ms.outdict(), **alpha1_ms.outdict(), **alpha2_ms.outdict(), **alpha3_ms.outdict(), **SigmaParam_ms.outdict(), **midpopbin_ms.outdict(), **lastpopbin_ms.outdict()}
+ms_parameters = {**x2_ms.outdict(), **x3_ms.outdict(), **alpha1_ms.outdict(), **alpha2_ms.outdict(), **alpha3_ms.outdict(), **SigmaParam_ms.outdict(), **midpopbin_ms.outdict(), **lastpopbin_ms.outdict(), **T_SigmaParam_ms.outdict(), **T_lastpopbin_ms.outdict()}
 
 
 #Parameters for the BGM FASt simulation (pseudo-simulation)
@@ -161,6 +167,8 @@ ps_parameters = {**x2_ps.outdict(), **x3_ps.outdict()}
 
 tau_min = new_param('tau_min', tau_min_edges.value[0], 'Gyr', info='Minimum age of a thin disc star')
 tau_max = new_param('tau_max', tau_max_edges.value[-1], 'Gyr', info='Maximum age of a thin disc star')
+T_tau_min = new_param('T_tau_min', T_tau_min_edges.value[0], 'Gyr', info='Minimum age of a young thick disc star')
+T_tau_max = new_param('T_tau_max', T_tau_max_edges.value[-1], 'Gyr', info='Maximum age of a young thick disc star')
 mass_min = new_param('mass_min', x1.value, 'M_Sun', info='Minimum mass to generate a star')
 mass_max = new_param('mass_max', x4.value, 'M_Sun', info='Maximum mass to generate a star')
 l_min = new_param('l_min', Lmin.value, 'deg', info='Minimum galactic longitude')
@@ -170,12 +178,12 @@ b_max = new_param('b_max', Bmax.value, 'deg', info='Maximum galactic latitude')
 r_min = new_param('r_min', 0, 'pc', info='Minimum distance')
 r_max = new_param('r_max', 50000, 'pc', info='Maximum distance')
 
-constraints_parameters = {**tau_min.outdict(), **tau_max.outdict(), **mass_min.outdict(), **mass_max.outdict(), **l_min.outdict(), **l_max.outdict(), **b_min.outdict(), **b_max.outdict(), **r_min.outdict(), **r_max.outdict()}
+constraints_parameters = {**tau_min.outdict(), **tau_max.outdict(), **T_tau_min.outdict(), **T_tau_max.outdict(), **mass_min.outdict(), **mass_max.outdict(), **l_min.outdict(), **l_max.outdict(), **b_min.outdict(), **b_max.outdict(), **r_min.outdict(), **r_max.outdict()}
 
 
 #Parameters for the import of the catalog file
 
-sel_columns_catalog = new_param('sel_columns_catalog', ['G','BpRp','longitude','latitude', 'Mvarpi', 'parallax'])
+sel_columns_catalog = new_param('sel_columns_catalog', ['G','GRp','longitude','latitude', 'Mvarpi', 'parallax'])
 Gmax_catalog = new_param('Gmax_catalog', 13.0, 'mag')
 
 catalog_file_parameters = {**sel_columns_catalog.outdict(), **Gmax_catalog.outdict()}
@@ -183,7 +191,7 @@ catalog_file_parameters = {**sel_columns_catalog.outdict(), **Gmax_catalog.outdi
 
 #Parameters for the import of the Mother Simulation file
 
-sel_columns_ms = new_param('sel_columns_ms', ['Gerr','BpRperr','PopBin','Age','MassOut','longitude','latitude','parallaxerr', 'Mvarpi'])
+sel_columns_ms = new_param('sel_columns_ms', ['Gerr','GRperr','PopBin','Age','MassOut','longitude','latitude','parallaxerr', 'Mvarpi'])
 Gmax_ms = new_param('Gmax_ms', Gmax_catalog.value, 'mag')
 
 ms_file_parameters = {**sel_columns_ms.outdict(), **Gmax_ms.outdict()}
@@ -191,7 +199,7 @@ ms_file_parameters = {**sel_columns_ms.outdict(), **Gmax_ms.outdict()}
 
 #Parameters for the free and fixed BGM FASt parameters
 
-free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'sfh1': 3, 'sfh2': 4, 'sfh3': 5, 'sfh4': 6, 'sfh5': 7, 'sfh6': 8, 'sfh7': 9, 'sfh8': 10, 'sfh9': 11, 'sfh10': 12, 'sfh11': 13}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
+free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'sfh1': 3, 'sfh2': 4, 'sfh3': 5, 'sfh4': 6, 'sfh5': 7, 'sfh6': 8, 'sfh7': 9, 'sfh8': 10, 'sfh9': 11, 'sfh10': 12, 'sfh11': 13, 'T-sfh10': 14, 'T-sfh11': 15}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
 fixed_params = new_param('fixed_params', {}, info='Dictionary with the names of the fixed parameters and their values')
 
 bgmfast_parameters = {**free_params.outdict(), **fixed_params.outdict()}

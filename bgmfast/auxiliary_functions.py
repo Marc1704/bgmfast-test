@@ -55,13 +55,13 @@ def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
 def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps):
 
     '''
-    Compute the position of a give star in bins in the discretized space of the 4-dimensional (latitude, longitude, Bp-Rp colour and absolute magnitude) accumulators
+    Compute the position of a give star in bins in the discretized space of the 4-dimensional (latitude, longitude, G-Rp colour and absolute magnitude) accumulators
 
     Input parameters
     ----------------
-    S : list [Bp-Rp, longitude, latitude, M_G'] --> colour, longitude, latitude and absolute magnitude of the star
-    Xmin : int or float --> minimum value for the binning in Bp-Rp range
-    Xmax : int or float --> maximum value for the binning in Bp-Rp range
+    S : list [G-Rp, longitude, latitude, M_G'] --> colour, longitude, latitude and absolute magnitude of the star
+    Xmin : int or float --> minimum value for the binning in G-Rp range
+    Xmax : int or float --> maximum value for the binning in G-Rp range
     Ymin : int or float --> minimum value for the binning in M_G' range
     Ymax : int or float --> maximum value for the binning in M_G' range
     Bmin : int or float --> minimum value for the binning in latitude
@@ -70,21 +70,21 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different Bp-Rp ranges
-    Ylims_Xsteps : list --> Bp-Rp steps of the different Bp-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different Bp-Rp ranges
+    Ylims : list --> limits of the different G-Rp ranges
+    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
+    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
 
     Output parameters
     -----------------
     ILS : int --> bin number in the longitude discretized space
     IBS : int --> bin number in the latitude discretized space
-    IXS : int --> bin number in the Bp-Rp discretized space
+    IXS : int --> bin number in the G-Rp discretized space
     IYS : int --> bin number in the M_G' discretized space
-    IXS_complete : int --> bin number in the Bp-Rp discretized space given even in the case of being outside the first range of M_G'
+    IXS_complete : int --> bin number in the G-Rp discretized space given even in the case of being outside the first range of M_G'
     IYS_complete : int --> bin number in the M_G' discretized space given even in the case of being outside the first range of M_G'
     '''
 
-    XS = float(S[0]) # Color Bp-Rp
+    XS = float(S[0]) # Color G-Rp
     lS = float(S[1]) # Longitude
     bS = float(S[2]) # Latitude
     YS = float(S[3]) # M_G' magnitude
@@ -158,10 +158,10 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF
-    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc
+    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations
     bin_nor : int or float --> normalization coeficient for binaries
     midpopbin : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr)
-    lastpopbin : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr)
+    lastpopbin : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) or surface density at the position of the Sun for the two subdivions of the age population of the young thick disc(8-10 Gyr)
     imidpoptau : int --> corresponding index of the midpopbin list
     ilastpoptau : int --> corresponding index of the lastpopbin list
 
@@ -183,7 +183,7 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
     # Notice the result is divided by bin_nor as Sigma_all/bin_nor is Sigma_primal
     if itau==4 or itau==5:
         integralout = (midpopbin[imidpoptau])*imf/bin_nor
-    elif itau==6:
+    elif itau==6 or itau==7:
         integralout = (lastpopbin[ilastpoptau])*imf/bin_nor
     else:
         integralout = (SigmaParam[itau])*imf/bin_nor
@@ -241,9 +241,9 @@ def Omega_func(m, itau, tau_min_edges, tau_max_edges):
     Input parameters
     ----------------
     m : int or float --> mass of the star
-    itau : int --> index corresponding to the subpopulation (itau = popbin - 1)
-    tau_min_edges : list --> lower limits of the age subpopulations intervals of the thin disc
-    tau_max_edges : list --> upper limits of the age subpopulations intervals of the thin disc
+    itau : int --> index corresponding to the subpopulation (itau = popbin - 1). In case ThickParamYoung=='fit' and itau==7, itau is set to 0
+    tau_min_edges : list --> lower limits of the age subpopulations intervals
+    tau_max_edges : list --> upper limits of the age subpopulations intervals
 
     Output parameters
     -----------------
@@ -335,15 +335,18 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF
-    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc
-    tau_min_edges : list --> lower limits of the age subpopulations intervals of the thin disc
-    tau_max_edges : list --> upper limits of the age subpopulations intervals of the thin disc
+    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations
+    tau_min_edges : list --> lower limits of the age subpopulations intervals
+    tau_max_edges : list --> upper limits of the age subpopulations intervals
 
     Output parameters
     -----------------
     integralout : float --> value of the normalization term of the given subpopulation
     '''
-
+    
+    if itau==7:
+        itau = 0
+    
     f1 = lambda m:m**(-alpha1)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
     f2 = lambda m:m**(-alpha2)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
     f3 = lambda m:m**(-alpha3)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
@@ -358,7 +361,7 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     return integralout
 
 
-def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges):
+def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges, structure):
 
     '''
     Computation of the normalization due to secondary (binary) stars. See complemetary information in the description of f_toint1_func3_NONP function
@@ -375,9 +378,10 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
     alpha1 : int or float --> first slope (alpha) of the IMF
     alpha2 : int or float --> second slope (alpha) of the IMF
     alpha3 : int or float --> third slope (alpha) of the IMF
-    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc
-    tau_min_edges : list --> lower limits of the age subpopulations intervals of the thin disc
-    tau_max_edges : list --> upper limits of the age subpopulations intervals of the thin disc
+    SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations
+    tau_min_edges : list --> lower limits of the age subpopulations intervals
+    tau_max_edges : list --> upper limits of the age subpopulations intervals
+    structure : str --> whether we are working with the "thin" disc or the "youngthick" disc
 
     Output parameters
     -----------------
@@ -385,7 +389,11 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
     '''
 
     binarity_norm = []
-    for i in range(0,7):
+    if structure=='thin':
+        for i in range(0, 7):
+            binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
+    elif structure=='youngthick':
+        i = 7
         binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
 
     bin_nor = sum(binarity_norm) + 1.

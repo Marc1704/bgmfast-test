@@ -88,13 +88,13 @@ class set_input_for_bgmfast:
             print('old_columns input not recognized')
 
 
-    def basic_filter(self, colnames=['parallaxerr', 'BpRperr'], filetype='all'):
+    def basic_filter(self, colnames=['parallaxerr', 'GRperr'], filetype='all'):
         '''
-        Remove stars without value of parallax or Bp-Rp colour or with negative values of parallax
+        Remove stars without value of parallax or G-Rp colour or with negative values of parallax
 
         Input parameters
         ----------------
-        colnames : list --> name of the columns containing the parallax and the Bp-Rp colour
+        colnames : list --> name of the columns containing the parallax and the G-Rp colour
         filetype : str ['all', 'nwd', 'wd'] --> see description in select_columns function
         '''
 

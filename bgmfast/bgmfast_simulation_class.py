@@ -50,7 +50,7 @@ class MatrixAccumulatorParam(AccumulatorParam):
         Input parameters
         ----------------
         mAdd : Pyspark accumulator? --> accumulator into which we want to add an element
-        sindex : list --> list with one or five elements containing the coordinates in the 4-dimensional (latitude, longitude, Bp-Rp and M_G') space of the Pyspark accumulator into which we want to put the element. The last element defines the value of the weight we want to add in that coordinates
+        sindex : list --> list with one or five elements containing the coordinates in the 4-dimensional (latitude, longitude, G-Rp and M_G') space of the Pyspark accumulator into which we want to put the element. The last element defines the value of the weight we want to add in that coordinates
 
         Output parameters
         -----------------
@@ -77,8 +77,8 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     Input parameters
     ----------------
     x : list --> each one of the rows in the Mother Simulation file
-    Xmin : int or float --> minimum value for the binning in Bp-Rp range
-    Xmax : int or float --> maximum value for the binning in Bp-Rp range
+    Xmin : int or float --> minimum value for the binning in G-Rp range
+    Xmax : int or float --> maximum value for the binning in G-Rp range
     Ymin : int or float --> minimum value for the binning in M_G' range
     Ymax : int or float --> maximum value for the binning in M_G' range
     Bmin : int or float --> minimum value for the binning in latitude
@@ -87,9 +87,9 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different Bp-Rp ranges
-    Ylims_Xsteps : list --> Bp-Rp steps of the different Bp-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different Bp-Rp ranges
+    Ylims : list --> limits of the different G-Rp ranges
+    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
+    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
     acc_complete : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
     acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the first considered range of M_G'
     acc2 : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the second considered range of M_G'
@@ -100,12 +100,12 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     cpes : int --> weight of the star. In this case, since we are dealing with the observed data, the value of the weight is always 1
     '''
 
-    BpRp = float(x[1])
+    GRp = float(x[1])
     longitude = float(x[2])
     latitude = float(x[3])
     Mvarpi = float(x[4])
 
-    xinput = [BpRp, longitude, latitude, Mvarpi]
+    xinput = [GRp, longitude, latitude, Mvarpi]
     matindex = binning_4D_Mvarpi(xinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps)
 
     cpes=1
@@ -135,8 +135,8 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     Input parameters
     ----------------
     WP : list -->
-    Xmin : int or float --> minimum value for the binning in Bp-Rp range
-    Xmax : int or float --> maximum value for the binning in Bp-Rp range
+    Xmin : int or float --> minimum value for the binning in G-Rp range
+    Xmax : int or float --> maximum value for the binning in G-Rp range
     Ymin : int or float --> minimum value for the binning in M_G' range
     Ymax : int or float --> maximum value for the binning in M_G' range
     Bmin : int or float --> minimum value for the binning in latitude
@@ -145,11 +145,11 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different Bp-Rp ranges
-    Ylims_Xsteps : list --> Bp-Rp steps of the different Bp-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different Bp-Rp ranges
-    tau_min : int or float --> minimum age of a thin disc star
-    tau_max : int or float --> maximum age of a thin disc star
+    Ylims : list --> limits of the different G-Rp ranges
+    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
+    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
+    tau_min : int or float or list --> minimum age of a thin disc star. In case ThickParamYoung=='fit', tau_min is a list with tau_min and T_tau_min
+    tau_max : int or float or list --> maximum age of a thin disc star. In case ThickParamYoung=='fit', tau_max is a list with tau_max and T_tau_max
     mass_min : int or float --> minimum mass to generate a star
     mass_max : int or float --> maximum mass to generate a star
     l_min : int or float --> minimum Galactic longitude
@@ -167,10 +167,10 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     alpha1_ps : int or float --> first slope (alpha) of the IMF for the BGM FASt simulation
     alpha2_ps : int or float --> second slope (alpha) of the IMF for the BGM FASt simulation
     alpha3_ps : int or float --> third slope (alpha) of the IMF for the BGM FASt simulation
-    SigmaParam_ps : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the BGM FASt simulation
+    SigmaParam_ps : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the BGM FASt simulation. In case ThickParamYoung=='fit', SigmaParam_ps is a list with SigmaParam_ps and T_SigmaParam_ps
     midpopbin_ps : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the BGM FASt simulation
-    lastpopbin_ps : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the BGM FASt simulation
-    bin_nor_ps : int or float --> normalization coeficient for binaries for the BGM FASt simulation
+    lastpopbin_ps : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the BGM FASt simulation. In case ThickParamYoung=='fit', lastpopbin_ps is a list with lastpopbin_ps and T_lastpopbin_ps
+    bin_nor_ps : int or float --> normalization coeficient for binaries for the BGM FASt simulation. In case ThickParamYoung=='fit', bin_nor_ps is a list with bin_nor_ps and T_bin_nor_ps
     x2_ms : int or float --> first mass limit of the IMF for the Mother Simulation
     x3_ms : int or float --> second mass limit of the IMF for the Mother Simulation
     K1_ms : int or float --> first continuity coeficient of the IMF for the Mother Simulation
@@ -179,11 +179,11 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     alpha1_ms : int or float --> first slope (alpha) of the IMF for the Mother Simulation
     alpha2_ms : int or float --> second slope (alpha) of the IMF for the Mother Simulation
     alpha3_ms : int or float --> third slope (alpha) of the IMF for the Mother Simulation
-    SigmaParam_ms : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the Mother Simulation
+    SigmaParam_ms : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the Mother Simulation. In case ThickParamYoung=='fit', SigmaParam_ms is a list with SigmaParam_ms and T_SigmaParam_ms
     midpopbin_ms : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the Mother Simulation
-    lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation
-    bin_nor_ms : int or float --> normalization coeficient for binaries for the Mother Simulation
-    ThickParamYoung : int or float --> weight of the stars in the Young Thick disc
+    lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation. In case ThickParamYoung=='fit', lastpopbin_ms is a list with lastpopbin_ms and T_lastpopbin_ms
+    bin_nor_ms : int or float --> normalization coeficient for binaries for the Mother Simulation. In case ThickParamYoung=='fit', bin_nor_ms is a list with bin_nor_ms and T_bin_nor_ms
+    ThickParamYoung : int or float --> weight of the stars in the Young Thick disc. Set to "fit" to compute it by adding T-SFH10 and T-SFH11 to the galactic parameters to fit
     HaloParam : int or float --> weight of the stars in the Halo
     BarParam : int or float --> weight of the stars in the Bar
     ThickParamOld : int or float --> weight of the stars in the Old Thick disc
@@ -198,7 +198,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     '''
 
     wpes = 1
-    BpRperr = float(WP[1])
+    GRperr = float(WP[1])
     popbin = float(WP[2]) # BGM population bin
     tau = float(WP[3]) # Age of the star
     mass = float(WP[4]) # Mass of the star
@@ -207,31 +207,64 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     parallax = float(WP[7])
     rstar = 1/parallax*1000. # Distance of the star (pc)
     Mvarpi = float(WP[8])
-
-    if 3<tau<=4:
-        imidpoptau = 0
-    elif 4<tau<=5:
-        imidpoptau = 1
-    elif 5<tau<=6:
-        imidpoptau = 2
-    elif 6<tau<=7:
-        imidpoptau = 3
-    else:
-        imidpoptau = np.nan
-
-    if 7<tau<=8:
-        ilastpoptau = 0
-    elif 8<tau<=9:
-        ilastpoptau = 1
-    elif 9<tau<=10:
-        ilastpoptau = 2
-    else:
-        ilastpoptau = np.nan
-
-    Sinput = [BpRperr, lstar, bstar, Mvarpi]
+    
+    Sinput = [GRperr, lstar, bstar, Mvarpi]
     matindex = binning_4D_Mvarpi(Sinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps)
+    
+    if ThickParamYoung=='fit':
+        tau_min, T_tau_min = tau_min
+        tau_max, T_tau_max = tau_max
+        SigmaParam_ps, T_SigmaParam_ps = SigmaParam_ps
+        lastpopbin_ps, T_lastpopbin_ps = lastpopbin_ps
+        bin_nor_ps, T_bin_nor_ps = bin_nor_ps
+        SigmaParam_ms, T_SigmaParam_ms = SigmaParam_ms
+        lastpopbin_ms, T_lastpopbin_ms = lastpopbin_ms
+        bin_nor_ms, T_bin_nor_ms = bin_nor_ms
 
-    if popbin==8:
+    if popbin<=7:
+        if 3<tau<=4:
+            imidpoptau = 0
+        elif 4<tau<=5:
+            imidpoptau = 1
+        elif 5<tau<=6:
+            imidpoptau = 2
+        elif 6<tau<=7:
+            imidpoptau = 3
+        else:
+            imidpoptau = np.nan
+        if 7<tau<=8:
+            ilastpoptau = 0
+        elif 8<tau<=9:
+            ilastpoptau = 1
+        elif 9<tau<=10:
+            ilastpoptau = 2
+        else:
+            ilastpoptau = np.nan
+            
+    elif popbin==8 and ThickParamYoung=='fit':
+        imidpoptau = np.nan
+        if 8<=tau<=9:
+            T_ilastpoptau = 0
+        elif 9<=tau<=10:
+            T_ilastpoptau = 1
+        else:
+            T_ilastpoptau = np.nan
+
+    if popbin==8 and ThickParamYoung=='fit' and T_tau_min<=tau<=T_tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
+        itau = int(popbin)-1
+        
+        PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, T_SigmaParam_ps, T_bin_nor_ps, midpopbin_ps, T_lastpopbin_ps, imidpoptau, T_ilastpoptau))
+
+        MS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, T_SigmaParam_ms, T_bin_nor_ms, midpopbin_ms, T_lastpopbin_ms, imidpoptau, T_ilastpoptau))
+
+        if PS==0:
+            wpes = 0
+        elif MS==0:
+            wpes = 1
+        else:
+            wpes = PS/MS
+
+    elif popbin==8:
         wpes = ThickParamYoung
 
     elif popbin==9:
@@ -298,7 +331,7 @@ class bgmfast_simulation:
         '''
 
         print('=======================================================================')
-        print('\n****************** Welcome to BGM FASt version 0.0.2 ******************\n')
+        print('\n****************** Welcome to BGM FASt version 0.0.3 ******************\n')
         print('=======================================================================')
 
         self.num_sim = 0
@@ -341,15 +374,15 @@ class bgmfast_simulation:
         ----------------
         nLonbins : int --> number of bins in longitude of the complete sample
         nLatbins : int --> number of bins in latitude of the complete sample
-        nColorbins : int --> number of bins in Bp-Rp color of the complete sample
+        nColorbins : int --> number of bins in G-Rp color of the complete sample
         nGbins : int --> number of bins in M_G' magnitude of the complete sample
         nLonbins1 : int --> number of bins in longitude for the first range of M_G'
         nLatbins1 : int --> number of bins in latitude for the first range of M_G'
-        nColorbins1 : int --> number of bins in Bp-Rp color for the first range of M_G'
+        nColorbins1 : int --> number of bins in G-Rp color for the first range of M_G'
         nGbins1 : int --> number of bins in M_G' magnitude for the first range of M_G'
         nLonbins2 : int --> number of bins in longitude for the second range of M_G'
         nLatbins2 : int --> number of bins in latitude for the second range of M_G'
-        nColorbins2 : int --> number of bins in Bp-Rp colour for the second range of M_G'
+        nColorbins2 : int --> number of bins in G-Rp colour for the second range of M_G'
         nGbins2 : int --> number of bins in M_G' magnitude for the second range of M_G'
         '''
 
@@ -378,8 +411,8 @@ class bgmfast_simulation:
 
         Input parameters
         ----------------
-        Xmin : int or float --> minimum value for the binning in Bp-Rp range
-        Xmax : int or float --> maximum value for the binning Bp-Rp range
+        Xmin : int or float --> minimum value for the binning in G-Rp range
+        Xmax : int or float --> maximum value for the binning G-Rp range
         Ymin : int or float --> minimum value for the binning M_G' range
         Ymax : int or float --> maximum value for the binning M_G' range
         Bmin : int or float --> minimum value for the binning of latitude
@@ -388,9 +421,9 @@ class bgmfast_simulation:
         Lmax : int or float --> maximum value for the binning of longitude
         blims : list --> limits of the latitude in the different M_G' ranges
         llims : list --> limits of the longitude in the different M_G' ranges
-        Ylims : list --> limits of the Bp-Rp colour in the different M_G' ranges
-        Ylims_Xsteps : list --> Bp-Rp steps of the different Bp-Rp colour ranges
-        Ylims_Ysteps : list --> M_G' steps of the different Bp-Rp colour ranges
+        Ylims : list --> limits of the G-Rp colour in the different M_G' ranges
+        Ylims_Xsteps : list --> G-Rp steps of the different G-Rp colour ranges
+        Ylims_Ysteps : list --> M_G' steps of the different G-Rp colour ranges
         '''
 
         print('\nSetting binning parameters...\n')
@@ -411,7 +444,9 @@ class bgmfast_simulation:
 
 
     def set_general_parameters(self,
-                               x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value, ThickParamYoung=general_parameters['ThickParamYoung'].value, HaloParam=general_parameters['HaloParam'].value, BarParam=general_parameters['BarParam'].value, ThickParamOld=general_parameters['ThickParamOld'].value):
+                               x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value,
+                               T_tau_min_edges=general_parameters['T_tau_min_edges'].value, T_tau_max_edges=general_parameters['T_tau_max_edges'].value,
+                               ThickParamYoung=general_parameters['ThickParamYoung'].value, HaloParam=general_parameters['HaloParam'].value, BarParam=general_parameters['BarParam'].value, ThickParamOld=general_parameters['ThickParamOld'].value):
 
         '''
         Set general parameters
@@ -422,7 +457,9 @@ class bgmfast_simulation:
         x4 : int or float --> maximum mass to generate a star
         tau_min_edges : list --> lower limits of the age subpopulations of the thin disc
         tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
-        ThickParamYoung : int or float --> weight of the young thick disc stars
+        T_tau_min_edges : list --> lower limit of the age population of the young thick disc
+        T_tau_max_edges : list --> upper limit of the age population of the young thick disc
+        ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding T-SFH10 and T-SFH11 to the Galactic parameters to fit
         HaloParam : int or float --> weight of the halo stars
         BarParam : int or float --> weight of the bar stars
         ThickParamOld : int or float --> weight of the old thick disc stars
@@ -438,10 +475,15 @@ class bgmfast_simulation:
         self.HaloParam = HaloParam
         self.BarParam = BarParam
         self.ThickParamOld = ThickParamOld
+        
+        if self.ThickParamYoung=='fit':
+            self.T_tau_min_edges = T_tau_min_edges
+            self.T_tau_max_edges = T_tau_max_edges
 
 
     def set_ms_parameters(self,
-                          x2_ms=ms_parameters['x2_ms'].value, x3_ms=ms_parameters['x3_ms'].value, alpha1_ms=ms_parameters['alpha1_ms'].value, alpha2_ms=ms_parameters['alpha2_ms'].value, alpha3_ms=ms_parameters['alpha3_ms'].value, SigmaParam_ms=ms_parameters['SigmaParam_ms'].value, midpopbin_ms=ms_parameters['midpopbin_ms'].value, lastpopbin_ms=ms_parameters['lastpopbin_ms'].value):
+                          x2_ms=ms_parameters['x2_ms'].value, x3_ms=ms_parameters['x3_ms'].value, alpha1_ms=ms_parameters['alpha1_ms'].value, alpha2_ms=ms_parameters['alpha2_ms'].value, alpha3_ms=ms_parameters['alpha3_ms'].value, SigmaParam_ms=ms_parameters['SigmaParam_ms'].value, midpopbin_ms=ms_parameters['midpopbin_ms'].value, lastpopbin_ms=ms_parameters['lastpopbin_ms'].value,
+                          T_SigmaParam_ms=ms_parameters['T_SigmaParam_ms'].value, T_lastpopbin_ms=ms_parameters['T_lastpopbin_ms'].value):
 
         '''
         Set Mother Simulation parameters
@@ -456,6 +498,8 @@ class bgmfast_simulation:
         SigmaParam_ms : list --> surface density at the position of the Sun for the different age subpopulations of the thin disc for the Mother Simulation
         midpopbin_ms : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the Mother Simulation
         lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation
+        T_SigmaParam_ms : list --> surface density at the position of the Sun for the age population of the young thick disc for the Mother Simulation
+        T_lastpopbin_ms : list --> surface density at the position of the Sun for the two subdivision of the age population of the young thick disc (8-9 Gyr and 9-10 Gyr) for the Mother Simulation
         '''
 
         print('\nSetting Mother Simulation parameters...\n')
@@ -471,7 +515,12 @@ class bgmfast_simulation:
 
         self.K1_ms, self.K2_ms, self.K3_ms = Continuity_Coeficients_func(self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.x1, self.x2_ms, self.x3_ms, self.x4)
 
-        self.bin_nor_ms = bin_nor_func(self.x1, self.x2_ms, self.x3_ms, self.x4, self.K1_ms, self.K2_ms, self.K3_ms, self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.SigmaParam_ms, self.tau_min_edges, self.tau_max_edges)
+        self.bin_nor_ms = bin_nor_func(self.x1, self.x2_ms, self.x3_ms, self.x4, self.K1_ms, self.K2_ms, self.K3_ms, self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.SigmaParam_ms, self.tau_min_edges, self.tau_max_edges, structure='thin')
+        
+        if self.ThickParamYoung=='fit':
+            self.T_SigmaParam_ms = T_SigmaParam_ms
+            self.T_lastpopbin_ms = T_lastpopbin_ms
+            self.T_bin_nor_ms = bin_nor_func(self.x1, self.x2_ms, self.x3_ms, self.x4, self.K1_ms, self.K2_ms, self.K3_ms, self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.T_SigmaParam_ms, self.T_tau_min_edges, self.T_tau_max_edges, structure='youngthick')
 
 
     def set_ps_parameters(self,
@@ -493,7 +542,9 @@ class bgmfast_simulation:
 
 
     def set_constraints_parameters(self,
-                                   tau_min=constraints_parameters['tau_min'].value, tau_max=constraints_parameters['tau_max'].value, mass_min=constraints_parameters['mass_min'].value, mass_max=constraints_parameters['mass_max'].value, l_min=constraints_parameters['l_min'].value, l_max=constraints_parameters['l_max'].value, b_min=constraints_parameters['b_min'].value, b_max=constraints_parameters['b_max'].value, r_min=constraints_parameters['r_min'].value, r_max=constraints_parameters['r_max'].value):
+                                   tau_min=constraints_parameters['tau_min'].value, tau_max=constraints_parameters['tau_max'].value,
+                                   T_tau_min=constraints_parameters['T_tau_min'].value, T_tau_max=constraints_parameters['T_tau_max'].value,
+                                   mass_min=constraints_parameters['mass_min'].value, mass_max=constraints_parameters['mass_max'].value, l_min=constraints_parameters['l_min'].value, l_max=constraints_parameters['l_max'].value, b_min=constraints_parameters['b_min'].value, b_max=constraints_parameters['b_max'].value, r_min=constraints_parameters['r_min'].value, r_max=constraints_parameters['r_max'].value):
 
         '''
         Set stars constraints parameters
@@ -502,6 +553,8 @@ class bgmfast_simulation:
         ----------------
         tau_min : int or float --> minimum age of a thin disc star
         tau_max : int or float --> maximum age of a thin disc star
+        T_tau_min : int or float --> minimum age of a young thick disc star
+        T_tau_max : int or float --> maximum age of a young thick disc star
         mass_min : int or float --> minimum mass to generate a star
         mass_max : int or float --> maximum mass to generate a star
         l_min : int or float --> minimum Galactic longitude
@@ -524,6 +577,10 @@ class bgmfast_simulation:
         self.b_max = b_max
         self.r_min = r_min
         self.r_max = r_max
+        
+        if self.ThickParamYoung=='fit':
+            self.T_tau_min = T_tau_min
+            self.T_tau_max = T_tau_max
         
     
     def set_bgmfast_parameters(self,
@@ -559,7 +616,7 @@ class bgmfast_simulation:
         Input parameters
         ----------------
         filename : str --> directory of the catalog file. Example: /home/username/bgmfast/inputs/gaiaDR3_G13.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, Bp-Rp, longitude, latitude, M_G' and parallax
+        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, G-Rp, longitude, latitude, M_G' and parallax
         Gmax : int or float --> limitting magnitude
 
         Output parameters
@@ -585,7 +642,7 @@ class bgmfast_simulation:
         Input parameters
         ----------------
         filename : str --> directory of the Mother Simulation file. Example: /home/username/bgmfast/inputs/ms_G13_errors_bgmfast.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, Bp-Rp, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
+        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, G-Rp, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
         Gmax : int or float --> limitting magnitude
 
         Output parameters
@@ -724,6 +781,10 @@ class bgmfast_simulation:
         HaloParam = self.HaloParam
         BarParam = self.BarParam
         ThickParamOld = self.ThickParamOld
+        
+        if ThickParamYoung=='fit':
+            T_tau_min_edges = self.T_tau_min_edges
+            T_tau_max_edges = self.T_tau_max_edges
 
         Xmin = self.Xmin
         Xmax = self.Xmax
@@ -749,6 +810,10 @@ class bgmfast_simulation:
         b_max = self.b_max
         r_min = self.r_min
         r_max = self.r_max
+        
+        if ThickParamYoung=='fit':
+            T_tau_min = self.T_tau_min
+            T_tau_max = self.T_tau_max
 
         x2_ms = self.x2_ms
         x3_ms = self.x3_ms
@@ -762,6 +827,11 @@ class bgmfast_simulation:
         K2_ms = self.K2_ms
         K3_ms = self.K3_ms
         bin_nor_ms = self.bin_nor_ms
+        
+        if ThickParamYoung=='fit':
+            T_SigmaParam_ms = self.T_SigmaParam_ms
+            T_lastpopbin_ms = self.T_lastpopbin_ms
+            T_bin_nor_ms = self.T_bin_nor_ms
 
         acc_complete, acc, acc2, simple = self.accumulators_init()
 
@@ -837,16 +907,60 @@ class bgmfast_simulation:
                     sfh11_ps = param[value[1]]
                 elif value[0]=='fixed':
                     sfh11_ps = value[1]
+            elif key=='T-sfh10':
+                if value[0]=='free':
+                    T_sfh10_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    T_sfh10_ps = value[1]
+            elif key=='T-sfh11':
+                if value[0]=='free':
+                    T_sfh11_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    T_sfh11_ps = value[1]
         
         SigmaParam_ps = np.array([sfh1_ps, sfh2_ps, sfh3_ps, sfh4_ps, sfh5_ps + sfh6_ps, sfh7_ps + sfh8_ps, sfh9_ps + sfh10_ps + sfh11_ps])
         midpopbin_ps = np.array([sfh5_ps, sfh6_ps, sfh7_ps, sfh8_ps])
         lastpopbin_ps = np.array([sfh9_ps, sfh10_ps, sfh11_ps])
+        
+        if ThickParamYoung=='fit':
+            T_SigmaParam_ps = np.array([T_sfh10_ps + T_sfh11_ps])
+            T_lastpopbin_ps = np.array([T_sfh10_ps, T_sfh11_ps])
 
         # If some surface mass density is negative, then Lr='inf' and we redraw again
-        if SigmaParam_ps[SigmaParam_ps<0].size==0 and ThickParamYoung>0 and HaloParam>0 and BarParam>0 and ThickParamOld>0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0:
+        if ThickParamYoung=='fit':
+            if ThickParamOld>0 and SigmaParam_ps[SigmaParam_ps<0].size==0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0 and T_SigmaParam_ps[T_SigmaParam_ps<0].size==0 and T_lastpopbin_ps[T_lastpopbin_ps<0].size==0:
+                
+                K1_ps,K2_ps,K3_ps = Continuity_Coeficients_func(alpha1_ps, alpha2_ps, alpha3_ps, x1, x2_ps, x3_ps, x4)
+                bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges, structure='thin')
+                T_bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, T_SigmaParam_ps, T_tau_min_edges, T_tau_max_edges, structure='youngthick')
+                
+                start = time.time()
+                current_datetime = datetime.now()
+                formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
+                
+                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, [lastpopbin_ps, T_lastpopbin_ps], [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, [lastpopbin_ms, T_lastpopbin_ms], [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple))
+                
+                end = time.time()
+                self.num_sim += 1
+
+                if self.logfile!=False:
+                    with open(self.logfile, 'a') as logs:
+                        logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
+
+                self.acc_complete = acc_complete
+                self.acc = acc
+                self.acc2 = acc2
+                self.simple = simple
+
+                self.simulation_data = self.return_cmd()[3]
+                
+            else:
+                self.simulation_data = np.array([0])
+            
+        elif ThickParamYoung>0 and ThickParamOld>0 and SigmaParam_ps[SigmaParam_ps<0].size==0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0:
 
             K1_ps,K2_ps,K3_ps = Continuity_Coeficients_func(alpha1_ps, alpha2_ps, alpha3_ps, x1, x2_ps, x3_ps, x4)
-            bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges)
+            bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges, structure='thin')
 
             start = time.time()
             current_datetime = datetime.now()

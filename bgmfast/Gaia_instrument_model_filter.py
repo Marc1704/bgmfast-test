@@ -1,7 +1,8 @@
 '''
 Gaia instrument model filter
 
-This script is intended to apply the Gaia instrument error model (https://www.cosmos.esa.int/web/gaia/science-performance) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
+This script is intended to apply the Gaia instrument error model (
+) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
 '''
 
 
@@ -76,6 +77,28 @@ def bprp_error(Gerr, bprp):
     return bprp_err
 
 
+def grp_error(Gerr, grp):
+    '''
+    Affect G-Rp colour of errors
+
+    Input parameters
+    ----------------
+    Gerr : int or float --> G magnitude affected of errors
+    grp : int or float --> G-Rp colour not affected of errors
+
+    Output parameters
+    -----------------
+    grp_err : float --> G-Rp colour affected of errors
+    '''
+
+    if Gerr<13:
+        grp_err = np.random.normal(grp, 0.002)
+    else:
+        grp_err = np.random.normal(grp, 0.006)
+
+    return grp_err
+
+
 def parallax_error(parallax, Gerr):
     '''
     Affect parallax of errors
@@ -100,10 +123,10 @@ def parallax_error(parallax, Gerr):
 
 class Gaia_instrument_model:
     '''
-    Affect G magnitude, Bp-Rp colour, and parallax of errors the magnitudes of a Mother Simulation file
+    Affect G magnitude, G-Rp colour, and parallax of errors the magnitudes of a Mother Simulation file
     '''
 
-    def __init__(self, filename, fileformat='fits', all_magnitudes=True, colnames=['G', 'BP_RP', 'Parallax'], T_factor=1):
+    def __init__(self, filename, fileformat='fits', all_magnitudes=True, colnames=['G', 'G_RP', 'Parallax'], T_factor=1):
         '''
         Import the Mother Simulation file
 
@@ -111,13 +134,13 @@ class Gaia_instrument_model:
         ----------------
         filename : str --> directory of the file. Example: /home/username/bgmfast/inputs/ms_G13.csv
         fileformat: str ['fits', 'csv'] --> format of the file
-        all_magnitudes : True, str ['G', 'BpRp', 'parallax'] or list ['G', 'BpRp', 'parallax'] --> whether if we want to affect errors to all magnitudes or just some of them
-        colnames : list --> name of the columns corresponding to the G magnitude, Bp-Rp colour and parallax
+        all_magnitudes : True, str ['G', 'GRp', 'parallax'] or list ['G', 'GRp', 'parallax'] --> whether if we want to affect errors to all magnitudes or just some of them
+        colnames : list --> name of the columns corresponding to the G magnitude, G-Rp colour and parallax
         T_factor : int or float --> see description in parallax_sigma function
         '''
 
         self.all_magnitudes = all_magnitudes
-        self.G_colname, self.bprp_colname, self.parallax_colname = colnames
+        self.G_colname, self.grp_colname, self.parallax_colname = colnames
 
         if fileformat=='fits':
             hdul = fits.open(filename, memmap=True)
@@ -147,13 +170,13 @@ class Gaia_instrument_model:
             print('Not valid columns input')
 
 
-    def affect_errors(self, all_magnitudes=True, output_colnames=['Gerr', 'BpRperr', 'parallaxerr']):
+    def affect_errors(self, all_magnitudes=True, output_colnames=['Gerr', 'GRperr', 'parallaxerr']):
         '''
         Affect of errors the corresponding magnitudes
 
         Input parameters
         ----------------
-        all_magnitudes : True, str ['G', 'BpRp', 'parallax'] or list ['G', 'BpRp', 'parallax'] --> whether we want to affect of errors all magnitudes or just some of them
+        all_magnitudes : True, str ['G', 'GRp', 'parallax'] or list ['G', 'GRp', 'parallax'] --> whether we want to affect of errors all magnitudes or just some of them
         output_colnames : str or list --> name of the columns containing the magnitudes affected of errors
 
         Output parameters
@@ -161,20 +184,20 @@ class Gaia_instrument_model:
         self.df : pandas dataframe --> table containing the magnitudes affected of errors
         '''
 
-        self.Gerr_colname, self.BpRperr_colname, self.Parallaxerr_colname = output_colnames
+        self.Gerr_colname, self.GRperr_colname, self.Parallaxerr_colname = output_colnames
 
         if all_magnitudes:
             self.df[self.Gerr_colname] = self.df[[self.G_colname]].apply(lambda x: G_error(x[self.G_colname]), axis=1)
-            self.df[self.BpRperr_colname] = self.df[[self.Gerr_colname, self.bprp_colname]].apply(lambda x: bprp_error(x[self.Gerr_colname], x[self.bprp_colname]), axis=1)
+            self.df[self.GRperr_colname] = self.df[[self.Gerr_colname, self.grp_colname]].apply(lambda x: grp_error(x[self.Gerr_colname], x[self.grp_colname]), axis=1)
             self.df[self.Parallaxerr_colname] = self.df[[self.Gerr_colname, self.parallax_colname]].apply(lambda x: parallax_error(x[self.parallax_colname], x[self.Gerr_colname]), axis=1)
 
         else:
             if 'G' in all_magnitudes:
                 self.df[self.Gerr_colname] = self.df[[self.G_colname]].apply(lambda x: G_error(x[self.G_colname]), axis=1)
-            if 'BpRp' in all_magnitudes and 'G' in all_magnitudes:
-                self.df[self.BpRperr_colname] = self.df[[self.Gerr_colname, self.bprp_colname]].apply(lambda x: bprp_error(x[self.Gerr_colname], x[self.bprp_colname]), axis=1)
-            elif 'BpRp' in all_magnitudes and 'G' not in all_magnitudes:
-                self.df[self.BpRperr_colname] = self.df[[self.G_colname, self.bprp_colname]].apply(lambda x: bprp_error(x[self.G_colname], x[self.bprp_colname]), axis=1)
+            if 'GRp' in all_magnitudes and 'G' in all_magnitudes:
+                self.df[self.GRperr_colname] = self.df[[self.Gerr_colname, self.grp_colname]].apply(lambda x: grp_error(x[self.Gerr_colname], x[self.grp_colname]), axis=1)
+            elif 'GRp' in all_magnitudes and 'G' not in all_magnitudes:
+                self.df[self.GRperr_colname] = self.df[[self.G_colname, self.grp_colname]].apply(lambda x: grp_error(x[self.G_colname], x[self.grp_colname]), axis=1)
             if 'parallax' in all_magnitudes and 'G' in all_magnitudes:
                 self.df[self.Parallaxerr_colname] = self.df[[self.Gerr_colname, self.parallax_colname]].apply(lambda x: parallax_error(x[self.parallax_colname], x[self.Gerr_colname]), axis=1)
             elif 'parallax' in all_magnitudes and 'G' not in all_magnitudes:

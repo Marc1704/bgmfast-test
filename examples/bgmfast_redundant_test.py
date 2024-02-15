@@ -80,7 +80,9 @@ param = [ms_params['alpha1_ms'].value,
          ms_params['midpopbin_ms'].value[3],
          ms_params['lastpopbin_ms'].value[0],
          ms_params['lastpopbin_ms'].value[1],
-         ms_params['lastpopbin_ms'].value[2]]
+         ms_params['lastpopbin_ms'].value[2],
+         ms_params['T_lastpopbin_ms'].value[0],
+         ms_params['T_lastpopbin_ms'].value[1]]
 
 #Run the BGM FASt simulation for the given parameters
 simulation_data = bgmfast_sim.run_simulation(param)
@@ -93,7 +95,7 @@ spark.stop()
 
 #Compute the distance between the catalog and the Mother Simulation Hess diagrams
 comparison = analysis_tools.compare_hess_diagrams()
-colnames_ms = ['Gerr', 'BpRperr', 'longitude', 'latitude', 'Mvarpi', 'parallaxerr']
+colnames_ms = ['Gerr', 'GRperr', 'longitude', 'latitude', 'Mvarpi', 'parallaxerr']
 ms_cmd, ms_data = comparison.generate_catalog_hess_diagram(filename_ms, colnames_ms, Gmax_ms)
 distance = comparison.compute_distance(catalog_data, ms_data)
 print('Distance between Gaia DR3 and the Mother Simulation:', distance)

@@ -25,13 +25,13 @@ catalog_out_name= './input_data/catalog/Gaia_DR3_G13.csv'
 catalog_file = set_input_for_bgmfast(catalog_in_name, fileformat='csv')
 
 #Select the necessary columns
-sel_columns_catalog = ['phot_g_mean_mag', 'bp_rp', 'l', 'b', 'parallax']
+sel_columns_catalog = ['phot_g_mean_mag', 'g_rp', 'l', 'b', 'parallax']
 catalog_file.select_columns(sel_columns_catalog)
 print(catalog_file.df['all'])
 
 #Change the name of some columns to set the file for BGM FASt
 old_columns_names = sel_columns_catalog[:-1]
-desired_columns = ['G', 'BpRp', 'longitude', 'latitude']
+desired_columns = ['G', 'GRp', 'longitude', 'latitude']
 catalog_file.change_column_name(old_columns_names, desired_columns)
 
 #Apply the basic data filter

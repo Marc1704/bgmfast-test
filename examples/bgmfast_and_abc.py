@@ -97,13 +97,15 @@ priors = [('normal', [ms_params['alpha1_ms'].value, 2]),
           ('normal', [ms_params['midpopbin_ms'].value[3], 2]),
           ('normal', [ms_params['lastpopbin_ms'].value[0], 2]),
           ('normal', [ms_params['lastpopbin_ms'].value[1], 2]),
-          ('normal', [ms_params['lastpopbin_ms'].value[2], 2])]
+          ('normal', [ms_params['lastpopbin_ms'].value[2], 2]), 
+          ('normal', [ms_params['T_lastpopbin_ms'].value[0], 2]),
+          ('normal', [ms_params['T_lastpopbin_ms'].value[1], 2])]
 
 #Define specificities of the ABC process
 prop = {"from_restart": False, 'dfunc': dist_metric_gdaf2, 'verbose': 1, 'adapt_t': True, 'pert_kernel': 2, 'restart': restart_file, 'outfile': output_file}
 
 #Define an ABC class object
-sampler = astroabc.ABC_class(14, 100, catalog_data, [10**6, 10**5], 100, priors, **prop)
+sampler = astroabc.ABC_class(16, 100, catalog_data, [2*10**6, 10**5], 100, priors, **prop)
 
 #Start ABC
 sampler.sample(model_sim)

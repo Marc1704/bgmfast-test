@@ -6,7 +6,7 @@ colnames_catalog = parameters.catalog_file_parameters['sel_columns_catalog'].val
 Gmax_catalog = parameters.catalog_file_parameters['Gmax_catalog'].value
 
 filename_ms = "./input_data/ms/ms_G13_err.csv"
-colnames_ms = ['Gerr', 'BpRperr', 'longitude', 'latitude', 'Mvarpi', 'parallaxerr']
+colnames_ms = ['Gerr', 'GRperr', 'longitude', 'latitude', 'Mvarpi', 'parallaxerr']
 Gmax_ms = parameters.ms_file_parameters['Gmax_ms'].value
 
 comparison = compare_catalogs.compare_hess_diagrams()
