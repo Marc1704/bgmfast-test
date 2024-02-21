@@ -69,7 +69,7 @@ class MatrixAccumulatorParam(AccumulatorParam):
 # WEIGHT FUNCTIONS
 # ****************
 
-def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, acc_complete, acc, acc2, simple):
+def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, acc, simple):
 
     '''
     Build the Hess diagram of the observed catalog using a Pyspark accumulator
@@ -87,12 +87,9 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different G-Rp ranges
-    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
-    acc_complete : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
-    acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the first considered range of M_G'
-    acc2 : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the second considered range of M_G'
+    Xstep : list --> G-Rp steps of the different G-Rp ranges
+    Ystep : list --> M_G' steps of the different G-Rp ranges
+    acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
     simple : pyspark accumulator --> Pyspark simple accumulator that counts the stars that are not within the considered ranges or that have suffered some problem during the computations
 
     Output parameters
@@ -106,28 +103,19 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     Mvarpi = float(x[4])
 
     xinput = [GRp, longitude, latitude, Mvarpi]
-    matindex = binning_4D_Mvarpi(xinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps)
+    matindex = binning_4D_Mvarpi(xinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep)
 
     cpes=1
 
     if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
         simple.add(1)
-    elif(Ylims[0][0]<=Mvarpi<Ylims[0][1]):
+    else:
         acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),cpes])
-    elif(Ylims[1][0]<=Mvarpi<Ylims[1][1]):
-        acc2.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),cpes])
-    else:
-        simple.add(1)
-
-    if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[4]) or np.isnan(matindex[5])):
-        pass
-    else:
-        acc_complete.add([int(matindex[0]),int(matindex[1]),int(matindex[4]),int(matindex[5]),cpes])
 
     return cpes
 
 
-def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple):
+def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple):
 
     '''
     Compute the weight of a given star. It uses Equation (37) from Mor et al. 2018 without integrating. The integral is conceptual, because it defines the integration over an increment (bin) of the N-dimensional space defined in Eq. (6). We reduce this increment until the end, when we only consider the star itself. At that point, the increment is exactly equal to the differential (both of them are the star itself) and the integral blows up.
@@ -145,9 +133,8 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different G-Rp ranges
-    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
+    Xstep : list --> G-Rp steps of the different G-Rp ranges
+    Ystep : list --> M_G' steps of the different G-Rp ranges
     tau_min : int or float or list --> minimum age of a thin disc star. In case ThickParamYoung=='fit', tau_min is a list with tau_min and T_tau_min
     tau_max : int or float or list --> maximum age of a thin disc star. In case ThickParamYoung=='fit', tau_max is a list with tau_max and T_tau_max
     mass_min : int or float --> minimum mass to generate a star
@@ -187,9 +174,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     HaloParam : int or float --> weight of the stars in the Halo
     BarParam : int or float --> weight of the stars in the Bar
     ThickParamOld : int or float --> weight of the stars in the Old Thick disc
-    acc_complete : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
-    acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the first considered range of M_G'
-    acc2 : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the second considered range of M_G'
+    acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
     simple : pyspark accumulator --> Pyspark simple accumulator that counts the stars that are not within the considered ranges or that have suffered some problem during the computations
 
     Output parameters
@@ -209,7 +194,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     Mvarpi = float(WP[8])
     
     Sinput = [GRperr, lstar, bstar, Mvarpi]
-    matindex = binning_4D_Mvarpi(Sinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps)
+    matindex = binning_4D_Mvarpi(Sinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep)
     
     if ThickParamYoung=='fit':
         tau_min, T_tau_min = tau_min
@@ -297,17 +282,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
         simple.add(1)
     else:
-        if Ylims[0][0]<Mvarpi<Ylims[0][1]:
-            acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
-        elif Ylims[1][0]<Mvarpi<Ylims[1][1]:
-            acc2.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
-        else:
-            simple.add(1)
-
-    if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[4]) or np.isnan(matindex[5])):
-        pass
-    else:
-        acc_complete.add([int(matindex[0]),int(matindex[1]),int(matindex[4]),int(matindex[5]),wpes])
+        acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
 
     return wpes
 
@@ -331,7 +306,7 @@ class bgmfast_simulation:
         '''
 
         print('=======================================================================')
-        print('\n****************** Welcome to BGM FASt version 0.0.3 ******************\n')
+        print('\n****************** Welcome to BGM FASt version 0.0.4 ******************\n')
         print('=======================================================================')
 
         self.num_sim = 0
@@ -365,7 +340,7 @@ class bgmfast_simulation:
 
     def set_acc_parameters(self,
                            nLonbins=acc_parameters['nLonbins'].value,
-                           nLatbins=acc_parameters['nLatbins'].value, nColorbins=acc_parameters['nColorbins'].value, nGbins=acc_parameters['nGbins'].value, nLonbins1=acc_parameters['nLonbins1'].value, nLatbins1=acc_parameters['nLatbins1'].value, nColorbins1=acc_parameters['nColorbins1'].value, nGbins1=acc_parameters['nGbins1'].value, nLonbins2=acc_parameters['nLonbins2'].value, nLatbins2=acc_parameters['nLatbins2'].value, nColorbins2=acc_parameters['nColorbins2'].value, nGbins2=acc_parameters['nGbins2'].value):
+                           nLatbins=acc_parameters['nLatbins'].value, nColorbins=acc_parameters['nColorbins'].value, nGbins=acc_parameters['nGbins'].value):
 
         '''
         Set accumulators parameters
@@ -376,14 +351,6 @@ class bgmfast_simulation:
         nLatbins : int --> number of bins in latitude of the complete sample
         nColorbins : int --> number of bins in G-Rp color of the complete sample
         nGbins : int --> number of bins in M_G' magnitude of the complete sample
-        nLonbins1 : int --> number of bins in longitude for the first range of M_G'
-        nLatbins1 : int --> number of bins in latitude for the first range of M_G'
-        nColorbins1 : int --> number of bins in G-Rp color for the first range of M_G'
-        nGbins1 : int --> number of bins in M_G' magnitude for the first range of M_G'
-        nLonbins2 : int --> number of bins in longitude for the second range of M_G'
-        nLatbins2 : int --> number of bins in latitude for the second range of M_G'
-        nColorbins2 : int --> number of bins in G-Rp colour for the second range of M_G'
-        nGbins2 : int --> number of bins in M_G' magnitude for the second range of M_G'
         '''
 
         print('\nSetting accumulators parameters...\n')
@@ -392,19 +359,11 @@ class bgmfast_simulation:
         self.nLatbins = nLatbins
         self.nColorbins = nColorbins
         self.nGbins = nGbins
-        self.nLonbins1 = nLonbins1
-        self.nLatbins1 = nLatbins1
-        self.nColorbins1 = nColorbins1
-        self.nGbins1 = nGbins1
-        self.nLonbins2 = nLonbins2
-        self.nLatbins2 = nLatbins2
-        self.nColorbins2 = nColorbins2
-        self.nGbins2 = nGbins2
         self.MatrixAccumulatorParam = MatrixAccumulatorParam
 
 
     def set_binning_parameters(self,
-                               Xmin=binning_parameters['Xmin'].value, Xmax=binning_parameters['Xmax'].value, Ymin=binning_parameters['Ymin'].value, Ymax=binning_parameters['Ymax'].value, Bmin=binning_parameters['Bmin'].value, Bmax=binning_parameters['Bmax'].value, Lmin=binning_parameters['Lmin'].value, Lmax=binning_parameters['Lmax'].value, blims=binning_parameters['blims'].value, llims=binning_parameters['llims'].value, Ylims=binning_parameters['Ylims'].value, Ylims_Xsteps=binning_parameters['Ylims_Xsteps'].value, Ylims_Ysteps=binning_parameters['Ylims_Ysteps'].value):
+                               Xmin=binning_parameters['Xmin'].value, Xmax=binning_parameters['Xmax'].value, Ymin=binning_parameters['Ymin'].value, Ymax=binning_parameters['Ymax'].value, Bmin=binning_parameters['Bmin'].value, Bmax=binning_parameters['Bmax'].value, Lmin=binning_parameters['Lmin'].value, Lmax=binning_parameters['Lmax'].value, blims=binning_parameters['blims'].value, llims=binning_parameters['llims'].value, Xstep=binning_parameters['Xstep'].value, Ystep=binning_parameters['Ystep'].value):
 
         '''
         Set binning parameters
@@ -421,9 +380,8 @@ class bgmfast_simulation:
         Lmax : int or float --> maximum value for the binning of longitude
         blims : list --> limits of the latitude in the different M_G' ranges
         llims : list --> limits of the longitude in the different M_G' ranges
-        Ylims : list --> limits of the G-Rp colour in the different M_G' ranges
-        Ylims_Xsteps : list --> G-Rp steps of the different G-Rp colour ranges
-        Ylims_Ysteps : list --> M_G' steps of the different G-Rp colour ranges
+        Xstep : list --> G-Rp steps of the different G-Rp colour ranges
+        Ystep : list --> M_G' steps of the different G-Rp colour ranges
         '''
 
         print('\nSetting binning parameters...\n')
@@ -438,9 +396,8 @@ class bgmfast_simulation:
         self.Lmax = Lmax
         self.blims = blims
         self.llims = llims
-        self.Ylims = Ylims
-        self.Ylims_Xsteps = Ylims_Xsteps
-        self.Ylims_Ysteps = Ylims_Ysteps
+        self.Xstep = Xstep
+        self.Ystep = Ystep
 
 
     def set_general_parameters(self,
@@ -665,29 +622,23 @@ class bgmfast_simulation:
     def accumulators_init(self):
 
         '''
-        Initialize three 4-dimensional Pyspark accumulators with nLonbins times nLatbins times nColorbins times nGbins bins
+        Initialize one 4-dimensional Pyspark accumulator with nLonbins times nLatbins times nColorbins times nGbins bins
 
         Output parameters
         -----------------
-        acc_complete : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
-        acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the first considered range of M_G'
-        acc2 : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) for stars in the second considered range of M_G'
+        acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the Hess diagram
         simple : pyspark accumulator --> Pyspark simple accumulator that counts the stars that are not within the considered ranges or that have suffered some problem during the computations
         '''
 
         sc = self.sc
         MatrixAccumulatorParam = self.MatrixAccumulatorParam
 
-        MATRIXCMD_complete = np.zeros((self.nLonbins, self.nLatbins, self.nColorbins, self.nGbins))
-        MATRIXCMD = np.zeros((self.nLonbins1, self.nLatbins1, self.nColorbins1, self.nGbins1))
-        MATRIXCMD2 = np.zeros((self.nLonbins2, self.nLatbins2, self.nColorbins2, self.nGbins2))
+        MATRIXCMD = np.zeros((self.nLonbins, self.nLatbins, self.nColorbins, self.nGbins))
 
-        self.acc_complete = sc.accumulator(MATRIXCMD_complete, MatrixAccumulatorParam())
         self.acc = sc.accumulator(MATRIXCMD, MatrixAccumulatorParam())
-        self.acc2 = sc.accumulator(MATRIXCMD2, MatrixAccumulatorParam())
         self.simple = sc.accumulator(0)
 
-        return self.acc_complete, self.acc, self.acc2, self.simple
+        return self.acc, self.simple
 
 
     def generate_catalog_cmd(self):
@@ -710,20 +661,17 @@ class bgmfast_simulation:
         Lmax = self.Lmax
         blims = self.blims
         llims = self.llims
-        Ylims = self.Ylims
-        Ylims_Xsteps = self.Ylims_Xsteps
-        Ylims_Ysteps = self.Ylims_Ysteps
+        Xstep = self.Xstep
+        Ystep = self.Ystep
 
-        acc_complete, acc, acc2, simple = self.accumulators_init()
+        acc, simple = self.accumulators_init()
 
-        self.catalog.foreach(lambda x: pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, acc_complete, acc, acc2, simple))
+        self.catalog.foreach(lambda x: pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, acc, simple))
 
-        self.acc_complete = acc_complete
         self.acc = acc
-        self.acc2 = acc2
         self.simple = simple
 
-        self.catalog_data = self.return_cmd()[3]
+        self.catalog_data = self.return_cmd()[1]
 
         return self.catalog_data
 
@@ -735,22 +683,14 @@ class bgmfast_simulation:
 
         Output parameters
         -----------------
-        MATRIXCMD_complete : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram
-        MATRIXCMD : numpy array --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the Hess diagrams of the first M_G' range
-        MATRIXCMD2 : numpy array --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the Hess diagrams of the second M_G' range
+        MATRIXCMD : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram
         data : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges
         '''
 
-        MATRIXCMD_complete = self.acc_complete.value
         MATRIXCMD = self.acc.value
-        MATRIXCMD2 = self.acc2.value
+        data = np.reshape(self.acc.value, np.size(self.acc.value))
 
-        acumulador_complete = np.reshape(self.acc_complete.value, np.size(self.acc_complete.value))
-        acumulador1 = np.reshape(self.acc.value, np.size(self.acc.value))
-        acumulador2 = np.reshape(self.acc2.value, np.size(self.acc2.value))
-        data = np.concatenate((acumulador1, acumulador2))
-
-        return MATRIXCMD_complete, MATRIXCMD, MATRIXCMD2, data
+        return MATRIXCMD, data
 
 
     def run_simulation(self, param):
@@ -796,9 +736,8 @@ class bgmfast_simulation:
         Lmax = self.Lmax
         blims = self.blims
         llims = self.llims
-        Ylims = self.Ylims
-        Ylims_Xsteps = self.Ylims_Xsteps
-        Ylims_Ysteps = self.Ylims_Ysteps
+        Xstep = self.Xstep
+        Ystep = self.Ystep
 
         tau_min = self.tau_min
         tau_max = self.tau_max
@@ -833,7 +772,7 @@ class bgmfast_simulation:
             T_lastpopbin_ms = self.T_lastpopbin_ms
             T_bin_nor_ms = self.T_bin_nor_ms
 
-        acc_complete, acc, acc2, simple = self.accumulators_init()
+        acc, simple = self.accumulators_init()
 
         # Explored parameters
         for key, value in self.all_params.items():
@@ -938,7 +877,7 @@ class bgmfast_simulation:
                 current_datetime = datetime.now()
                 formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
                 
-                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, [lastpopbin_ps, T_lastpopbin_ps], [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, [lastpopbin_ms, T_lastpopbin_ms], [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple))
+                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, [lastpopbin_ps, T_lastpopbin_ps], [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, [lastpopbin_ms, T_lastpopbin_ms], [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
                 
                 end = time.time()
                 self.num_sim += 1
@@ -947,12 +886,10 @@ class bgmfast_simulation:
                     with open(self.logfile, 'a') as logs:
                         logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
 
-                self.acc_complete = acc_complete
                 self.acc = acc
-                self.acc2 = acc2
                 self.simple = simple
 
-                self.simulation_data = self.return_cmd()[3]
+                self.simulation_data = self.return_cmd()[1]
                 
             else:
                 self.simulation_data = np.array([0])
@@ -966,7 +903,7 @@ class bgmfast_simulation:
             current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
-            self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc_complete, acc, acc2, simple))
+            self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
 
             end = time.time()
             self.num_sim += 1
@@ -975,12 +912,10 @@ class bgmfast_simulation:
                 with open(self.logfile, 'a') as logs:
                     logs.write(str(self.num_sim) + ',' + formatted_datetime + ',' + str(round(end - start, 2)) + '\n')
 
-            self.acc_complete = acc_complete
             self.acc = acc
-            self.acc2 = acc2
             self.simple = simple
 
-            self.simulation_data = self.return_cmd()[3]
+            self.simulation_data = self.return_cmd()[1]
 
         else:
             self.simulation_data = np.array([0])

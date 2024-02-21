@@ -822,7 +822,7 @@ class compare_hess_diagrams:
         self.bgmfast_sim.read_catalog(filename_catalog, colnames, Gmax)
         self.bgmfast_sim.generate_catalog_cmd()
         catalog_cmd = self.bgmfast_sim.return_cmd()[0]
-        catalog_data = self.bgmfast_sim.return_cmd()[3]
+        catalog_data = self.bgmfast_sim.return_cmd()[1]
         
         return catalog_cmd, catalog_data
 
@@ -1025,9 +1025,9 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
     '''
     
     binning_parameters = parameters.binning_parameters
-    grp_steps = binning_parameters['Ylims_Xsteps'].value[0]
+    grp_step = binning_parameters['Xstep'].value[0]
     grp_min = binning_parameters['Xmin'].value
-    mvarpi_steps = binning_parameters['Ylims_Ysteps'].value[0]
+    mvarpi_step = binning_parameters['Ystep'].value[0]
     mvarpi_min = binning_parameters['Ymin'].value
 
     if not isinstance(bgmfast_cmd, list):
@@ -1047,8 +1047,8 @@ def cmd_to_bins_table(bgmfast_cmd, output_file):
                 for mvarpi in range(len(bgmfast_cmd[0][lon][lat][grp])):
                     longitudes.append(lon)
                     latitudes.append(lat)
-                    grps.append(grp_min + grp*grp_steps + grp_steps/2)
-                    mvarpis.append(mvarpi_min + mvarpi*mvarpi_steps + mvarpi_steps/2)
+                    grps.append(grp_min + grp*grp_step + grp_step/2)
+                    mvarpis.append(mvarpi_min + mvarpi*mvarpi_step + mvarpi_step/2)
                     for i in range(len(bgmfast_cmd)):
                         counts[i].append(bgmfast_cmd[i][lon][lat][grp][mvarpi])
                     

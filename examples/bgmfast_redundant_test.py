@@ -56,7 +56,6 @@ bgmfast_sim.read_catalog(filename_catalog, sel_columns_catalog, Gmax_catalog)
 
 #Retrive the generated Hess diagram
 catalog_data = bgmfast_sim.generate_catalog_cmd()
-MATRIXCatalog2CMD, MATRIXCatalog2CMD2 = bgmfast_sim.return_cmd()[1:3]
 
 #Read the Mother Simulation
 bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms)

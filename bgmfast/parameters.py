@@ -94,29 +94,20 @@ Lmin = new_param('Lmin', 0, 'deg', info='Minimum value for the binning of longit
 Lmax = new_param('Lmax', 360, 'deg', info='Maximum value for the binning of longitude')
 blims = new_param('blims', [[30, 90], [10, 30], [0, 10]], info='Limits of the different absolute latitude ranges')
 llims = new_param('llims', [[0, 360]], info='Limits of the different longitude ranges')
-Ylims = new_param('Ylims', [[-5, 8.5], [8.5, 8.5]], info="Limits of the different M_G' ranges")
-Ylims_Xsteps = new_param('Ylims_Xsteps', [0.05, Xmax.value - Xmin.value], info="Bp-Rp steps of the different M_G' ranges")
-Ylims_Ysteps = new_param('Ylims_Ysteps', [0.25, 0.25], info="M_G' steps of the different M_G' ranges")
+Xstep = new_param('Xstep', 0.05, info="G-Rp steps of the different M_G' ranges")
+Ystep = new_param('Ystep', 0.25, info="M_G' steps of the different M_G' ranges")
 
-binning_parameters = {**Xmin.outdict(), **Xmax.outdict(), **Ymin.outdict(), **Ymax.outdict(), **Bmin.outdict(), **Bmax.outdict(), **Lmin.outdict(), **Lmax.outdict(), **blims.outdict(), **llims.outdict(), **Ylims.outdict(), **Ylims_Xsteps.outdict(), **Ylims_Ysteps.outdict()}
+binning_parameters = {**Xmin.outdict(), **Xmax.outdict(), **Ymin.outdict(), **Ymax.outdict(), **Bmin.outdict(), **Bmax.outdict(), **Lmin.outdict(), **Lmax.outdict(), **blims.outdict(), **llims.outdict(), **Xstep.outdict(), **Ystep.outdict()}
 
 
 #Parameters to define the accumulators' dimensions for the HR diagram ("1" corresponds to -1<M_G'<5 and "2" to 5<M_G'<15)
 
 nLonbins = new_param('nLonbins', len(llims.value), info='Number of bins in longitude of the complete sample')
 nLatbins = new_param('nLatbins', len(blims.value), info='Number of bins in latitude of the complete sample')
-nColorbins = new_param('nColorbins', math.ceil((Xmax.value - Xmin.value)/Ylims_Xsteps.value[0]), info='Number of bins in Bp-Rp color of the complete sample')
-nGbins = new_param('nGbins', math.ceil((Ymax.value - Ymin.value)/Ylims_Ysteps.value[0]), info="Number of bins in M_G' magnitude of the complete sample")
-nLonbins1 = new_param('nLonbins1', len(llims.value), info='Number of bins in longitude')
-nLatbins1 = new_param('nLatbins1', len(blims.value), info='Number of bins in latitude')
-nColorbins1 = new_param('nColorbins1', math.ceil((Xmax.value - Xmin.value)/Ylims_Xsteps.value[0]), info='Number of bins in Bp-Rp color')
-nGbins1 = new_param('nGbins1', math.ceil((Ylims.value[0][1] - Ylims.value[0][0])/Ylims_Ysteps.value[0]), info="Number of bins in M_G' magnitude")
-nLonbins2 = new_param('nLonbins2', len(llims.value), info='Number of bins in longitude')
-nLatbins2 = new_param('nLatbins2', len(blims.value), info='Number of bins in latitude')
-nColorbins2 = new_param('nColorbins2', math.ceil((Xmax.value - Xmin.value)/Ylims_Xsteps.value[1]), info='Number of bins in Bp-Rp colour')
-nGbins2 = new_param('nGbins2', math.ceil((Ylims.value[1][1] - Ylims.value[1][0])/Ylims_Ysteps.value[1]), info="Number of bins in M_G' magnitude")
+nColorbins = new_param('nColorbins', math.ceil((Xmax.value - Xmin.value)/Xstep.value), info='Number of bins in G-Rp color of the complete sample')
+nGbins = new_param('nGbins', math.ceil((Ymax.value - Ymin.value)/Ystep.value), info="Number of bins in M_G' magnitude of the complete sample")
 
-acc_parameters = {**nLonbins.outdict(), **nLatbins.outdict(), **nColorbins.outdict(), **nGbins.outdict(), **nLonbins1.outdict(), **nLatbins1.outdict(), **nColorbins1.outdict(), **nGbins1.outdict(), **nLonbins2.outdict(), **nLatbins2.outdict(), **nColorbins2.outdict(), **nGbins2.outdict()}
+acc_parameters = {**nLonbins.outdict(), **nLatbins.outdict(), **nColorbins.outdict(), **nGbins.outdict()}
 
 
 #General parameters

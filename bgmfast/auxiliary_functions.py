@@ -52,7 +52,7 @@ def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
     return K1, K2, K3
 
 
-def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Ylims, Ylims_Xsteps, Ylims_Ysteps):
+def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep):
 
     '''
     Compute the position of a give star in bins in the discretized space of the 4-dimensional (latitude, longitude, G-Rp colour and absolute magnitude) accumulators
@@ -70,9 +70,8 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     Lmax : int or float --> maximum value for the binning in longitude
     blims : list --> limits of the different absolute latitude ranges
     llims : list --> limits of the different longitude ranges
-    Ylims : list --> limits of the different G-Rp ranges
-    Ylims_Xsteps : list --> G-Rp steps of the different G-Rp ranges
-    Ylims_Ysteps : list --> M_G' steps of the different G-Rp ranges
+    Xstep : list --> G-Rp steps of the different G-Rp ranges
+    Ystep : list --> M_G' steps of the different G-Rp ranges
 
     Output parameters
     -----------------
@@ -80,8 +79,6 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     IBS : int --> bin number in the latitude discretized space
     IXS : int --> bin number in the G-Rp discretized space
     IYS : int --> bin number in the M_G' discretized space
-    IXS_complete : int --> bin number in the G-Rp discretized space given even in the case of being outside the first range of M_G'
-    IYS_complete : int --> bin number in the M_G' discretized space given even in the case of being outside the first range of M_G'
     '''
 
     XS = float(S[0]) # Color G-Rp
@@ -100,33 +97,8 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
             if llim[0]<=abs(lS)<=llim[1]:
                 ILS = i
 
-        #for Ylim, i in zip(Ylims, range(len(Ylims))):
-            #if not Xmin<=XS<Xmax:
-                #break
-            #if Ylim[0]<YS<=Ylim[1]:
-                #IYS = int((YS - Ylim[1])/Ylims_Ysteps[i])
-                #IXS = int((XS - Xmin)/Ylims_Xsteps[i])
-        
-        if Ylims[0][0]<=YS<Ylims[0][1]:
-            IYS = int((YS - Ylims[0][0])/Ylims_Ysteps[0])
-            IXS = int((XS - Xmin)/Ylims_Xsteps[0])
-        elif Ylims[1][0]<=YS<Ylims[1][1]:
-            IYS = int((YS - Ylims[1][0])/Ylims_Ysteps[1])
-            IXS = int((XS - Xmin)/Ylims_Xsteps[1])
-
-        # Giving a value for this stars which is not in the desired ranges
-        else:
-            IYS = np.nan
-            IXS = np.nan
-            IBS = np.nan
-            ILS = np.nan
-
-        if np.isnan(IBS) or np.isnan(ILS) or np.isnan(IXS) or np.isnan(IYS):
-            IYS_complete = np.nan
-            IXS_complete = np.nan
-        else:
-            IYS_complete = int((YS - Ymin)/Ylims_Ysteps[0])
-            IXS_complete = int((XS - Xmin)/Ylims_Xsteps[0])
+        IYS = int((YS - Ymin)/Ystep)
+        IXS = int((XS - Xmin)/Xstep)
 
     # Giving a value for this stars which is not in the desired ranges
     else:
@@ -134,10 +106,8 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
         IXS = np.nan
         IBS = np.nan
         ILS = np.nan
-        IYS_complete = np.nan
-        IXS_complete = np.nan
 
-    return ILS, IBS, IXS, IYS, IXS_complete, IYS_complete
+    return ILS, IBS, IXS, IYS
 
 
 def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, bin_nor, midpopbin, lastpopbin, imidpoptau, ilastpoptau):
