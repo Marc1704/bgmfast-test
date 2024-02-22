@@ -200,14 +200,12 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
         tau_min, T_tau_min = tau_min
         tau_max, T_tau_max = tau_max
         SigmaParam_ps, T_SigmaParam_ps = SigmaParam_ps
-        lastpopbin_ps, T_lastpopbin_ps = lastpopbin_ps
         bin_nor_ps, T_bin_nor_ps = bin_nor_ps
         SigmaParam_ms, T_SigmaParam_ms = SigmaParam_ms
-        lastpopbin_ms, T_lastpopbin_ms = lastpopbin_ms
         bin_nor_ms, T_bin_nor_ms = bin_nor_ms
 
     if popbin<=7:
-        if 3<tau<=4:
+        if 3<=tau<=4:
             imidpoptau = 0
         elif 4<tau<=5:
             imidpoptau = 1
@@ -227,20 +225,42 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
             ilastpoptau = np.nan
             
     elif popbin==8 and ThickParamYoung=='fit':
-        imidpoptau = np.nan
+        T_imidpoptau = np.nan
+        T_ilastpoptau = np.nan
+        T_midpopbin_ms = np.nan
+        T_midpopbin_ps = np.nan
+        T_lastpopbin_ms = np.nan
+        T_lastpopbin_ps = np.nan
         if 8<=tau<=9:
-            T_ilastpoptau = 0
-        elif 9<=tau<=10:
-            T_ilastpoptau = 1
+            itau = 0
+        elif 9<tau<=10:
+            itau = 1
+        elif 10<tau<=11:
+            itau = 2
+        elif 11<tau<=12:
+            itau = 3
         else:
-            T_ilastpoptau = np.nan
+            itau = np.nan
 
-    if popbin==8 and ThickParamYoung=='fit' and T_tau_min<=tau<=T_tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
+    if popbin<=7 and tau_min<=tau<=tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
         itau = int(popbin)-1
-        
-        PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, T_SigmaParam_ps, T_bin_nor_ps, midpopbin_ps, T_lastpopbin_ps, imidpoptau, T_ilastpoptau))
 
-        MS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, T_SigmaParam_ms, T_bin_nor_ms, midpopbin_ms, T_lastpopbin_ms, imidpoptau, T_ilastpoptau))
+        PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, bin_nor_ps, midpopbin_ps, lastpopbin_ps, imidpoptau, ilastpoptau, structure='thin'))
+
+        MS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, bin_nor_ms, midpopbin_ms, lastpopbin_ms, imidpoptau, ilastpoptau, structure='thin'))
+
+        if PS==0:
+            wpes = 0
+        elif MS==0:
+            wpes = 1
+        else:
+            wpes = PS/MS
+    
+    elif popbin==8 and ThickParamYoung=='fit' and T_tau_min<=tau<=T_tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
+        
+        PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, T_SigmaParam_ps, T_bin_nor_ps, T_midpopbin_ps, T_lastpopbin_ps, T_imidpoptau, T_ilastpoptau, structure='youngthick'))
+
+        MS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, T_SigmaParam_ms, T_bin_nor_ms, T_midpopbin_ms, T_lastpopbin_ms, T_imidpoptau, T_ilastpoptau, structure='youngthick'))
 
         if PS==0:
             wpes = 0
@@ -260,37 +280,16 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
 
     elif popbin==11:
         wpes = ThickParamOld
-
-    elif (tau_min<=tau<=tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max):
-        itau = int(popbin)-1
-
-        PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, bin_nor_ps, midpopbin_ps, lastpopbin_ps, imidpoptau, ilastpoptau))
-
-        MS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, bin_nor_ms, midpopbin_ms, lastpopbin_ms, imidpoptau, ilastpoptau))
-
-        if PS==0:
-            wpes = 0
-        elif MS==0:
-            wpes = 1
-        else:
-            wpes = PS/MS
-
+        
     else:
-        print(popbin, tau)
-        wpes = 1
+        print('Not correct popbin %i or age %f' %(popbin, tau))
+        import sys
+        sys.exit()
 
     if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
         simple.add(1)
     else:
-        try:
-            acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
-        except Exception as e:
-            print('Exception:', e)
-            print('matindex = ', matindex)
-            print('wpes =', wpes)
-            print(popbin, tau, mass, lstar, bstar, rstar)
-            import sys
-            sys.exit()
+        acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
 
     return wpes
 
@@ -314,7 +313,7 @@ class bgmfast_simulation:
         '''
 
         print('=======================================================================')
-        print('\n****************** Welcome to BGM FASt version 0.0.4 ******************\n')
+        print('\n****************** Welcome to BGM FASt version 0.0.5 ******************\n')
         print('=======================================================================')
 
         self.num_sim = 0
@@ -327,7 +326,7 @@ class bgmfast_simulation:
         pass
 
 
-    def open_spark_session(self):
+    def open_spark_session(self, setLogLevel="WARN"):
 
         '''
         Open the Spark Session
@@ -340,6 +339,7 @@ class bgmfast_simulation:
         print('\nOpening Spark Session...\n')
 
         self.spark = SparkSession.builder.appName("Strangis").getOrCreate()
+        self.spark.sparkContext.setLogLevel(setLogLevel)
         print(self.spark)
         self.sc = self.spark.sparkContext
 
@@ -422,8 +422,8 @@ class bgmfast_simulation:
         x4 : int or float --> maximum mass to generate a star
         tau_min_edges : list --> lower limits of the age subpopulations of the thin disc
         tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
-        T_tau_min_edges : list --> lower limit of the age population of the young thick disc
-        T_tau_max_edges : list --> upper limit of the age population of the young thick disc
+        T_tau_min_edges : list --> lower limits of the age intervals of the young thick disc
+        T_tau_max_edges : list --> upper limits of the age intervals of the young thick disc
         ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding T-SFH10 and T-SFH11 to the Galactic parameters to fit
         HaloParam : int or float --> weight of the halo stars
         BarParam : int or float --> weight of the bar stars
@@ -448,7 +448,7 @@ class bgmfast_simulation:
 
     def set_ms_parameters(self,
                           x2_ms=ms_parameters['x2_ms'].value, x3_ms=ms_parameters['x3_ms'].value, alpha1_ms=ms_parameters['alpha1_ms'].value, alpha2_ms=ms_parameters['alpha2_ms'].value, alpha3_ms=ms_parameters['alpha3_ms'].value, SigmaParam_ms=ms_parameters['SigmaParam_ms'].value, midpopbin_ms=ms_parameters['midpopbin_ms'].value, lastpopbin_ms=ms_parameters['lastpopbin_ms'].value,
-                          T_SigmaParam_ms=ms_parameters['T_SigmaParam_ms'].value, T_lastpopbin_ms=ms_parameters['T_lastpopbin_ms'].value):
+                          T_SigmaParam_ms=ms_parameters['T_SigmaParam_ms'].value):
 
         '''
         Set Mother Simulation parameters
@@ -464,7 +464,6 @@ class bgmfast_simulation:
         midpopbin_ms : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the Mother Simulation
         lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation
         T_SigmaParam_ms : list --> surface density at the position of the Sun for the age population of the young thick disc for the Mother Simulation
-        T_lastpopbin_ms : list --> surface density at the position of the Sun for the two subdivision of the age population of the young thick disc (8-9 Gyr and 9-10 Gyr) for the Mother Simulation
         '''
 
         print('\nSetting Mother Simulation parameters...\n')
@@ -484,7 +483,6 @@ class bgmfast_simulation:
         
         if self.ThickParamYoung=='fit':
             self.T_SigmaParam_ms = T_SigmaParam_ms
-            self.T_lastpopbin_ms = T_lastpopbin_ms
             self.T_bin_nor_ms = bin_nor_func(self.x1, self.x2_ms, self.x3_ms, self.x4, self.K1_ms, self.K2_ms, self.K3_ms, self.alpha1_ms, self.alpha2_ms, self.alpha3_ms, self.T_SigmaParam_ms, self.T_tau_min_edges, self.T_tau_max_edges, structure='youngthick')
 
 
@@ -777,7 +775,6 @@ class bgmfast_simulation:
         
         if ThickParamYoung=='fit':
             T_SigmaParam_ms = self.T_SigmaParam_ms
-            T_lastpopbin_ms = self.T_lastpopbin_ms
             T_bin_nor_ms = self.T_bin_nor_ms
 
         acc, simple = self.accumulators_init()
@@ -864,18 +861,27 @@ class bgmfast_simulation:
                     T_sfh11_ps = param[value[1]]
                 elif value[0]=='fixed':
                     T_sfh11_ps = value[1]
+            elif key=='T-sfh12':
+                if value[0]=='free':
+                    T_sfh12_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    T_sfh12_ps = value[1]
+            elif key=='T-sfh13':
+                if value[0]=='free':
+                    T_sfh13_ps = param[value[1]]
+                elif value[0]=='fixed':
+                    T_sfh13_ps = value[1]
         
         SigmaParam_ps = np.array([sfh1_ps, sfh2_ps, sfh3_ps, sfh4_ps, sfh5_ps + sfh6_ps, sfh7_ps + sfh8_ps, sfh9_ps + sfh10_ps + sfh11_ps])
         midpopbin_ps = np.array([sfh5_ps, sfh6_ps, sfh7_ps, sfh8_ps])
         lastpopbin_ps = np.array([sfh9_ps, sfh10_ps, sfh11_ps])
         
         if ThickParamYoung=='fit':
-            T_SigmaParam_ps = np.array([T_sfh10_ps + T_sfh11_ps])
-            T_lastpopbin_ps = np.array([T_sfh10_ps, T_sfh11_ps])
+            T_SigmaParam_ps = np.array([T_sfh10_ps, T_sfh11_ps, T_sfh12_ps, T_sfh13_ps])
 
         # If some surface mass density is negative, then Lr='inf' and we redraw again
         if ThickParamYoung=='fit':
-            if ThickParamOld>0 and SigmaParam_ps[SigmaParam_ps<0].size==0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0 and T_SigmaParam_ps[T_SigmaParam_ps<0].size==0 and T_lastpopbin_ps[T_lastpopbin_ps<0].size==0:
+            if ThickParamOld>0 and SigmaParam_ps[SigmaParam_ps<0].size==0 and lastpopbin_ps[lastpopbin_ps<0].size==0 and midpopbin_ps[midpopbin_ps<0].size==0 and T_SigmaParam_ps[T_SigmaParam_ps<0].size==0:
                 
                 K1_ps,K2_ps,K3_ps = Continuity_Coeficients_func(alpha1_ps, alpha2_ps, alpha3_ps, x1, x2_ps, x3_ps, x4)
                 bin_nor_ps = bin_nor_func(x1, x2_ps, x3_ps, x4, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, tau_min_edges, tau_max_edges, structure='thin')
@@ -885,7 +891,7 @@ class bgmfast_simulation:
                 current_datetime = datetime.now()
                 formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
                 
-                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, [lastpopbin_ps, T_lastpopbin_ps], [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, [lastpopbin_ms, T_lastpopbin_ms], [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
+                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, lastpopbin_ps, [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, lastpopbin_ms, [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
                 
                 end = time.time()
                 self.num_sim += 1

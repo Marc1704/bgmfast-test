@@ -110,7 +110,7 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     return ILS, IBS, IXS, IYS
 
 
-def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, bin_nor, midpopbin, lastpopbin, imidpoptau, ilastpoptau):
+def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, bin_nor, midpopbin, lastpopbin, imidpoptau, ilastpoptau, structure):
 
     '''
     Computation of the numerator or the denominator of Equation (37) from Mor et al. 2018. Sigma_all/bin_nor is exactly Sigma_primal. This computation corresponds to a single star and it is used to obtain the weight of that star.
@@ -134,6 +134,7 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
     lastpopbin : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) or surface density at the position of the Sun for the two subdivions of the age population of the young thick disc(8-10 Gyr)
     imidpoptau : int --> corresponding index of the midpopbin list
     ilastpoptau : int --> corresponding index of the lastpopbin list
+    structure : str --> whether we are working with the "thin" disc or the "youngthick" disc
 
     Output parameters
     -----------------
@@ -151,11 +152,14 @@ def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, 
         imf = (K3*(((imassmax)**(-alpha3 + 2)) - ((imassmin)**(-alpha3 + 2)))/(-alpha3 + 2))
 
     # Notice the result is divided by bin_nor as Sigma_all/bin_nor is Sigma_primal
-    if itau==4 or itau==5:
-        integralout = (midpopbin[imidpoptau])*imf/bin_nor
-    elif itau==6 or itau==7:
-        integralout = (lastpopbin[ilastpoptau])*imf/bin_nor
-    else:
+    if structure=='thin':
+        if itau==4 or itau==5:
+            integralout = (midpopbin[imidpoptau])*imf/bin_nor
+        elif itau==6:
+            integralout = (lastpopbin[ilastpoptau])*imf/bin_nor
+        else:
+            integralout = (SigmaParam[itau])*imf/bin_nor
+    elif structure=='youngthick':
         integralout = (SigmaParam[itau])*imf/bin_nor
 
     return integralout
@@ -314,9 +318,6 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     integralout : float --> value of the normalization term of the given subpopulation
     '''
     
-    if itau==7:
-        itau = 0
-    
     f1 = lambda m:m**(-alpha1)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
     f2 = lambda m:m**(-alpha2)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
     f3 = lambda m:m**(-alpha3)*Omega_func(m, itau, tau_min_edges, tau_max_edges)*bin_prob_func(m)*int_prob_M_m_func(m, x1)
@@ -363,8 +364,8 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
         for i in range(0, 7):
             binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
     elif structure=='youngthick':
-        i = 7
-        binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
+        for i in range(0, 4):
+            binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
 
     bin_nor = sum(binarity_norm) + 1.
 

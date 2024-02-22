@@ -116,8 +116,8 @@ x1 = new_param('x1', 0.015, 'M_Sun', info='Minimum mass to generate a star')
 x4 = new_param('x4', 120, 'M_Sun', info='Maximum mass to generate a star')
 tau_min_edges = new_param('tau_min_edges', [0, 0.15, 1, 2, 3, 5, 7], 'Gyr', info='Lower limits of the age subpopulations of the thin disc')
 tau_max_edges = new_param('tau_max_edges', [0.15, 1, 2, 3, 5, 7, 10], 'Gyr', info='Upper limits of the age subpopulations of the thin disc')
-T_tau_min_edges = new_param('T_tau_min_edges', [8], 'Gyr', info='Lower limit of the age population of the young thick disc')
-T_tau_max_edges = new_param('T_tau_max_edges', [10], 'Gyr', info='Upper limit of the age population of the young thick disc')
+T_tau_min_edges = new_param('T_tau_min_edges', [8, 9, 10, 11], 'Gyr', info='Lower limits of the age intervals of the young thick disc')
+T_tau_max_edges = new_param('T_tau_max_edges', [9, 10, 11, 12], 'Gyr', info='Upper limits of the age intervals of the young thick disc')
 ThickParamYoung = new_param('ThickParamYoung', 'fit', info='Weight of the young thick disc stars')
 HaloParam = new_param('HaloParam', 1, info='Weight of the halo stars')
 BarParam = new_param('BarParam', 1, info='Weight of the bar stars')
@@ -138,12 +138,11 @@ H_ms = new_param('H_ms', [129.901627, 361.019562, 469.020203, 556.135254, 663.66
 SigmaParam_ms = new_param('SigmaParam_ms', np.array([i*j for i, j in zip(rho_ms.value, H_ms.value)]), info='Surface density at the position of the Sun for the different age subpopulations of the thin disc for the MS')
 midpopbin_ms = new_param('midpopbin_ms', np.array([rho_ms.value[-3]*H_ms.value[-3]/2, rho_ms.value[-3]*H_ms.value[-3]/2, rho_ms.value[-2]*H_ms.value[-2]/2, rho_ms.value[-2]*H_ms.value[-2]/2]), info='Surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc for the MS (3-5 Gyr and 5-7 Gyr)')
 lastpopbin_ms = new_param('lastpopbin_ms', np.array(3*[rho_ms.value[-1]*H_ms.value[-1]/3]), info='Surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc for the MS (7-10 Gyr)')
-T_rho_ms = new_param('T_rho_ms', [0.00266559026], info='Volume density ath the position of the Sun fo the age population of the young thick disc for the MS')
-T_H_ms = new_param('T_H_ms', [2501.77], info='H value in Eq. (37) in Mor et al. 2018 for the age population of the young thick disc for the MS')
-T_SigmaParam_ms = new_param('T_SigmaParam_ms', np.array([i*j for i, j in zip(T_rho_ms.value, T_H_ms.value)]), info='Surface density at the position of the Sun for the age population of the young thick disc for the MS')
-T_lastpopbin_ms = new_param('T_lastpopbin_ms', np.array(2*[T_rho_ms.value[-1]*T_H_ms.value[-1]/2]), info='Surface density at the position of the Sun for the two subdivision of the age population of the young thick disc (8-9 Gyr and 9-10 Gyr) for the MS')
+T_rho_ms = new_param('T_rho_ms', 4*[0.00266559026], info='Volume density ath the position of the Sun of the age population of the young thick disc for the MS')
+T_H_ms = new_param('T_H_ms', 4*[2501.77], info='H value in Eq. (37) in Mor et al. 2018 for the age population of the young thick disc for the MS')
+T_SigmaParam_ms = new_param('T_SigmaParam_ms', np.array([i*j for i, j in zip(T_rho_ms.value, T_H_ms.value)]), info='Surface density at the position of the Sun for the four subdivisions of the age population of the young thick disc (8-9 Gyr, 9-10 Gyr, 10-11 Gyr, and 11-12 Gyr) for the MS')
 
-ms_parameters = {**x2_ms.outdict(), **x3_ms.outdict(), **alpha1_ms.outdict(), **alpha2_ms.outdict(), **alpha3_ms.outdict(), **SigmaParam_ms.outdict(), **midpopbin_ms.outdict(), **lastpopbin_ms.outdict(), **T_SigmaParam_ms.outdict(), **T_lastpopbin_ms.outdict()}
+ms_parameters = {**x2_ms.outdict(), **x3_ms.outdict(), **alpha1_ms.outdict(), **alpha2_ms.outdict(), **alpha3_ms.outdict(), **SigmaParam_ms.outdict(), **midpopbin_ms.outdict(), **lastpopbin_ms.outdict(), **T_SigmaParam_ms.outdict()}
 
 
 #Parameters for the BGM FASt simulation (pseudo-simulation)
@@ -190,7 +189,7 @@ ms_file_parameters = {**sel_columns_ms.outdict(), **Gmax_ms.outdict()}
 
 #Parameters for the free and fixed BGM FASt parameters
 
-free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'sfh1': 3, 'sfh2': 4, 'sfh3': 5, 'sfh4': 6, 'sfh5': 7, 'sfh6': 8, 'sfh7': 9, 'sfh8': 10, 'sfh9': 11, 'sfh10': 12, 'sfh11': 13, 'T-sfh10': 14, 'T-sfh11': 15}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
+free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'sfh1': 3, 'sfh2': 4, 'sfh3': 5, 'sfh4': 6, 'sfh5': 7, 'sfh6': 8, 'sfh7': 9, 'sfh8': 10, 'sfh9': 11, 'sfh10': 12, 'sfh11': 13, 'T-sfh10': 14, 'T-sfh11': 15, 'T-sfh12': 16, 'T-sfh13': 17}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
 fixed_params = new_param('fixed_params', {}, info='Dictionary with the names of the fixed parameters and their values')
 
 bgmfast_parameters = {**free_params.outdict(), **fixed_params.outdict()}
