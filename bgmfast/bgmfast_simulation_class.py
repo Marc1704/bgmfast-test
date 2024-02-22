@@ -282,7 +282,15 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
         simple.add(1)
     else:
-        acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
+        try:
+            acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
+        except Exception as e:
+            print('Exception:', e)
+            print('matindex = ', matindex)
+            print('wpes =', wpes)
+            print(popbin, tau, mass, lstar, bstar, rstar)
+            import sys
+            sys.exit()
 
     return wpes
 

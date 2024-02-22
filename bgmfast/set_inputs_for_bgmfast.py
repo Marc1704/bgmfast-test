@@ -8,6 +8,7 @@ from astropy.io import fits
 from astropy.table import Table
 import pandas as pd
 import numpy as np
+from bgmfast.parameters import popbin_parameters
 
 
 class set_input_for_bgmfast:
@@ -88,22 +89,27 @@ class set_input_for_bgmfast:
             print('old_columns input not recognized')
 
 
-    def basic_filter(self, colnames=['parallaxerr', 'GRperr'], filetype='all'):
+    def basic_filter(self, colnames={'Parallax': 'parallaxerr', 'Color': 'GRperr'}, filetype='all'):
         '''
         Remove stars without value of parallax or G-Rp colour or with negative values of parallax
 
         Input parameters
         ----------------
-        colnames : list --> name of the columns containing the parallax and the G-Rp colour
+        colnames : dict --> name/s of the column/s containing the parallax and the Bp-Rp or G-Rp colour
         filetype : str ['all', 'nwd', 'wd'] --> see description in select_columns function
         '''
 
         self.filetype = filetype
+        
+        if 'Parallax' in colnames.keys() and 'Color' in colnames.keys():
+            self.df[self.filetype] = self.df[self.filetype][(self.df[self.filetype][colnames['Parallax']]!='') & (self.df[self.filetype][colnames['Parallax']]>0) & (self.df[self.filetype][colnames['Color']]!='')]
+        elif 'Parallax' in colnames.keys():
+            self.df[self.filetype] = self.df[self.filetype][(self.df[self.filetype][colnames['Parallax']]!='') & (self.df[self.filetype][colnames['Parallax']]>0)]
+        elif 'Color' in colnames.keys():
+            self.df[self.filetype] = self.df[self.filetype][(self.df[self.filetype][colnames['Color']]!='')]
 
-        self.df[self.filetype] = self.df[self.filetype][(self.df[self.filetype][colnames[0]]!='') & (self.df[self.filetype][colnames[0]]>0) & (self.df[self.filetype][colnames[1]]!='')]
 
-
-    def compute_absolute_magnitude(self, colnames=['Gerr', 'parallaxerr'], filetype='all'):
+    def compute_absolute_magnitude(self, colnames={'G': 'Gerr', 'Parallax': 'parallaxerr'}, filetype='all'):
         '''
         Compute absolute magnitudes and add them in a new column
 
@@ -116,43 +122,48 @@ class set_input_for_bgmfast:
 
         M_G_prime = lambda G, parallax: G + 5*np.log10(parallax/1000) + 5
 
-        self.df[self.filetype]['Mvarpi'] = M_G_prime(self.df[self.filetype][colnames[0]], self.df[self.filetype][colnames[1]])
+        self.df[self.filetype]['Mvarpi'] = M_G_prime(self.df[self.filetype][colnames['G']], self.df[self.filetype][colnames['Parallax']])
 
 
-    def compute_popbin(self, thin_disk_limits=[0, 0.15, 1, 2, 3, 5, 7, 10], orig_ms_popbin={'thin_disk': 1, 'young_thick_disk': 2, 'halo': 3, 'bar': 4, 'old_thick_disk': 5}, gaia_popbin={'thin_disk': [1, 2, 3, 4, 5, 6, 7], 'young_thick_disk': 8, 'halo': 9, 'bar': 10, 'old_thick_disk': 11}, filetype='all'):
+    def compute_popbin(self, 
+                       thin_disc_limits=popbin_parameters['thin_disc_limits'].value,
+                       bgm_popbin=popbin_parameters['bgm_popbin'].value,
+                       gaia_popbin=popbin_parameters['gaia_popbin'].value,
+                       colnames={'Popbin': 'PopBin', 'Age': 'Age'},
+                       filetype='all'):
         '''
         Compute PopBins from age and add them in a new column
 
         Input parameters
         ----------------
-        thin_disk_limits : list --> age limits of the thin disk subpopulations used for the generation of the Mother Simulation
-        orig_ms_popbin : dict --> relation between the name and the PopBin of the populations used for the generation of the Mother Simulation
+        thin_disc_limits : list --> age limits of the thin disk subpopulations used for the generation of the Mother Simulation
+        bgm_popbin : dict --> relation between the name and the PopBin of the populations used for the generation of the Mother Simulation
         gaia_popbin : dict --> relation between the name and the PopBin(s) of the populations according to Gaia
         filetype : str ['all', 'nwd', 'wd'] --> see description in select_columns function
         '''
 
         self.filetype = filetype
 
-        orig_ms_popbin_keys = list(orig_ms_popbin.keys())
-        orig_ms_popbin_values = list(orig_ms_popbin.values())
+        bgm_popbin_keys = list(bgm_popbin.keys())
+        bgm_popbin_values = list(bgm_popbin.values())
 
         new_popbin = []
         for index, row in self.df[self.filetype].iterrows():
-            popbin = int(row['PopBin'])
+            popbin = int(row[colnames['Popbin']])
 
-            if popbin==orig_ms_popbin['thin_disk']:
-                age = float(row['Age'])
+            if popbin==bgm_popbin['thin_disk']:
+                age = float(row[colnames['Age']])
 
                 for i in range(len(gaia_popbin['thin_disk'])):
                     if age==0:
                         new_popbin.append(gaia_popbin['thin_disk'][0])
                         break
-                    elif thin_disk_limits[i]<age<=thin_disk_limits[i+1]:
+                    elif thin_disc_limits[i]<age<=thin_disc_limits[i+1]:
                         new_popbin.append(gaia_popbin['thin_disk'][i])
                         break
 
             else:
-                popbin_name = orig_ms_popbin_keys[orig_ms_popbin_values.index(popbin)]
+                popbin_name = bgm_popbin_keys[bgm_popbin_values.index(popbin)]
                 new_popbin.append(gaia_popbin[popbin_name])
 
         self.df[self.filetype]['OldPopBin'] = self.df[self.filetype]['PopBin']
@@ -199,7 +210,7 @@ class set_input_for_bgmfast:
         self.df['nwd'] = self.df[self.filetype][self.df[self.filetype][colnames[0]]<f(self.df[self.filetype][colnames[1]])]
 
 
-    def save(self, output_file, columns='all', filetype='nwd'):
+    def save(self, output_file, columns='all', filetype='all'):
         '''
         Save a pandas dataframe as a CSV file
 

@@ -203,6 +203,14 @@ dist_thresh = new_param('dist_thresh', 100, info='Minimum threshold for the numb
 distance_parameters = {**dist_thresh.outdict()}
 
 
+#Parameters for Popbin computation in set_inputs_for_bgmfast.py
+thin_disc_limits = new_param('thin_disc_limits', [0, 0.15, 1, 2, 3, 5, 7, 10], 'Gyr ago', info='Age limits of the different age subpopulations of the Thin disc, including the values at the extremes')
+bgm_popbin = new_param('bgm_popbin', {'thin_disk': 1, 'young_thick_disk': 2, 'halo': 3, 'bar': 4, 'old_thick_disk': 5}, info='Popbin assignment in BGM')
+gaia_popbin = new_param('gaia_popbin', {'thin_disk': [1, 2, 3, 4, 5, 6, 7], 'young_thick_disk': 8, 'halo': 9, 'bar': 10, 'old_thick_disk': 11}, info='Popbin assignment in Gaia')
+popbin_parameters = {**thin_disc_limits.outdict(), **bgm_popbin.outdict(), **gaia_popbin.outdict()}
+
+
+
 
 
 
