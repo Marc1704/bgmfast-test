@@ -37,10 +37,10 @@ for folder in folders:
     tempname = filename.split('.')[0] + '.temp'
     print(filename)
 
-    sel_columns_ms = ['G', 'G_RP', 'Parallax', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
+    sel_columns_ms = ['G', 'BP_RP', 'G_RP', 'Parallax', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
     ms_file = set_input_for_bgmfast(filename, fileformat='fits')
-    ms_file.select_columns(sel_columns_ms, filetype='all')
-    ms_file.save(tempname, filetype='all')
+    ms_file.select_columns(sel_columns_ms)
+    ms_file.save(tempname)
 
     file_from_csv = open(tempname, 'r')
     counter = 0

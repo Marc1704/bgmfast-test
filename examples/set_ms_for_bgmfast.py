@@ -26,7 +26,7 @@ ms_out_name= './input_data/ms/ms_G13_err.csv'
 ms_file = Gaia_instrument_model(ms_in_name, fileformat='csv')
 
 #Select the necessary columns from the Mother Simulation
-sel_columns_ms = ['G', 'G_RP', 'Parallax', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
+sel_columns_ms = ['G', 'BP_RP', 'G_RP', 'Parallax', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
 ms_file.select_columns(sel_columns_ms)
 
 #Affect of errors the Mother Simulation
@@ -40,7 +40,7 @@ ms_file.affect_errors()
 ms_file = set_input_for_bgmfast(ms_file.df, fileformat='pd')
 
 #Select the necessary columns
-sel_columns_ms_err = ['Gerr', 'GRperr', 'parallaxerr', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
+sel_columns_ms_err = ['Gerr', 'BpRperr', 'GRperr', 'parallaxerr', 'PopBin', 'Age', 'longitude', 'latitude', 'IniMass']
 ms_file.select_columns(sel_columns_ms_err)
 
 #Change the name of some columns to set the file for BGM FASt
@@ -49,11 +49,11 @@ new_columns_names_ms = ['MassOut']
 ms_file.change_column_name(old_columns_names_ms, new_columns_names_ms)
 
 #Compute absolute magnitudes
-ms_file.compute_absolute_magnitude(colnames=['Gerr', 'parallaxerr'])
+ms_file.compute_absolute_magnitude(colnames={'G': 'Gerr', 'Parallax': 'parallaxerr'})
 
 #Compute PopBins
 ms_file.compute_popbin()
 
 #Save the final Mother Simulation affected of errors, with the necessary magnitudes and with the proper columns names
-sel_columns_ms_final = ['Gerr', 'GRperr', 'PopBin', 'Age', 'longitude', 'latitude', 'parallaxerr', 'MassOut', 'Mvarpi']
-ms_file.save(ms_out_name, columns=sel_columns_ms_final, filetype='all')
+sel_columns_ms_final = ['Gerr', 'BpRperr', 'GRperr', 'PopBin', 'Age', 'longitude', 'latitude', 'parallaxerr', 'MassOut', 'Mvarpi']
+ms_file.save(ms_out_name, columns=sel_columns_ms_final)
