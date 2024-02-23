@@ -1,8 +1,7 @@
 '''
 Gaia instrument model filter
 
-This script is intended to apply the Gaia instrument error model (
-) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
+This script is intended to apply the Gaia instrument error model (https://www.cosmos.esa.int/web/gaia/dr3 for Photometry, https://www.cosmos.esa.int/web/gaia/science-performance for Astrometry) to the Mother Simulation generated with BGM to obtain an artificially affected catalog.
 '''
 
 
@@ -27,9 +26,13 @@ def G_error(G):
     '''
 
     if G<13:
-        Gerr = np.random.normal(G, 0.0002)
-    else:
         Gerr = np.random.normal(G, 0.0003)
+    elif G<17:
+        Gerr = np.random.normal(G, 0.001)
+    elif G<20:
+        Gerr = np.random.normal(G, 0.006)
+    else:
+        print('To faint (G=%f) star' %G)
 
     return Gerr
 
@@ -70,9 +73,13 @@ def bprp_error(Gerr, bprp):
     '''
 
     if Gerr<13:
-        bprp_err = np.random.normal(bprp, 0.002)
+        bprp_err = np.random.normal(bprp, 0.0009 + 0.0006)
+    elif Gerr<17:
+        bprp_err = np.random.normal(bprp, 0.012 + 0.006)
+    elif Gerr<20:
+        bprp_err = np.random.normal(bprp, 0.108 + 0.052)
     else:
-        bprp_err = np.random.normal(bprp, 0.006)
+        print('To faint (G=%f) star' %Gerr)
 
     return bprp_err
 
@@ -92,9 +99,13 @@ def grp_error(Gerr, grp):
     '''
 
     if Gerr<13:
-        grp_err = np.random.normal(grp, 0.002)
+        grp_err = np.random.normal(grp, 0.0003 + 0.0006)
+    elif Gerr<17:
+        grp_err = np.random.normal(grp, 0.001 + 0.006)
+    elif Gerr<20:
+        grp_err =  np.random.normal(grp, 0.006 + 0.052)
     else:
-        grp_err = np.random.normal(grp, 0.006)
+        print('To faint (G=%f) star' %Gerr)
 
     return grp_err
 
@@ -114,9 +125,11 @@ def parallax_error(parallax, Gerr):
     '''
 
     if Gerr<3:
-        parallax_err = np.random.normal(parallax, parallax_sigma(13))
-    else:
+        parallax_err = np.random.normal(parallax, np.random.randint(2*12, 4*12))
+    elif Gerr<20.7:
         parallax_err = np.random.normal(parallax, parallax_sigma(Gerr))
+    else:
+        print('To faint (G=%f) star' %Gerr)
 
     return parallax_err
 
