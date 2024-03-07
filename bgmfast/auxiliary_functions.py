@@ -13,7 +13,7 @@ from bgmfast import parameters
 def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
 
     '''
-    Compute the continuity coeficients of the Initial Mass Function (IMF), which we describe as a three-trunkated power law
+    Compute the continuity coeficients of the Initial Mass Function (IMF), which we describe as a three-trunkated power law. We are looking for the coeficients that will let us have continuity in the IMF by applying the normalization stated next to Eq. (30) in Mor et al. 2018. Therefore, the three conditions we apply to find them are: normalization, continuity in x2 and continuity in x3. Applying these conditions we can find the functions that are used to compute the continuity coeficients. 
 
     Input parameters
     ----------------
@@ -33,17 +33,17 @@ def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
     '''
 
     # We use one equation for each IMF slope, f1,f2,f3.
-    f1=lambda m: m**(-alpha1+1)
-    f2=lambda m: m**(-alpha2+1)
-    f3=lambda m: m**(-alpha3+1)
+    f1 = lambda m: m**(-alpha1)*m
+    f2 = lambda m: m**(-alpha2)*m
+    f3 = lambda m: m**(-alpha3)*m
 
     # Integration and computation of the Continuity Coeficients
-    I1=integrate.quad(f1, x1, x2)
-    I2=integrate.quad(f2, x2, x3)
-    I3=integrate.quad(f3, x3, x4)
+    I1 = integrate.quad(f1, x1, x2)
+    I2 = integrate.quad(f2, x2, x3)
+    I3 = integrate.quad(f3, x3, x4)
 
-    K1K2=x2**(-alpha2+1)/x2**(-alpha1+1)
-    K2K3=x3**(-alpha3+1)/x3**(-alpha2+1)
+    K1K2=x2**(-alpha2 + alpha1)
+    K2K3=x3**(-alpha3 + alpha2)
 
     K1 = 1/(I1[0] + 1/K1K2*I2[0] + 1/(K1K2*K2K3)*I3[0])
     K2 = K1/K1K2
@@ -332,7 +332,7 @@ def f_toint1_func3_NONP(itau, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3
     return integralout
 
 
-def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges, structure):
+def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges):
 
     '''
     Computation of the normalization due to secondary (binary) stars. See complemetary information in the description of f_toint1_func3_NONP function
@@ -352,7 +352,6 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
     SigmaParam : list --> surface density at the position of the Sun for the different age subpopulations
     tau_min_edges : list --> lower limits of the age subpopulations intervals
     tau_max_edges : list --> upper limits of the age subpopulations intervals
-    structure : str --> whether we are working with the "thin" disc or the "youngthick" disc
 
     Output parameters
     -----------------
@@ -360,11 +359,7 @@ def bin_nor_func(x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam,
     '''
 
     binarity_norm = []
-    if structure=='thin':
-        for i in range(0, 7):
-            binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
-    elif structure=='youngthick':
-        for i in range(0, 4):
+    for i in range(len(SigmaParam)):
             binarity_norm.append(f_toint1_func3_NONP(i, x1, x2, x3, x4, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, tau_min_edges, tau_max_edges))
 
     bin_nor = sum(binarity_norm) + 1.
