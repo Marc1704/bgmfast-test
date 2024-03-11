@@ -170,7 +170,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     midpopbin_ms : list --> surface density at the position of the Sun for the four subdivisions of the 5th and 6th age subpopulations of the thin disc (3-5 Gyr and 5-7 Gyr) for the Mother Simulation
     lastpopbin_ms : list --> surface density at the position of the Sun for the three subdivisions of the last (7th) age subpopulation of the thin disc (7-10 Gyr) for the Mother Simulation. In case ThickParamYoung=='fit', lastpopbin_ms is a list with lastpopbin_ms and T_lastpopbin_ms
     bin_nor_ms : int or float --> normalization coeficient for binaries for the Mother Simulation. In case ThickParamYoung=='fit', bin_nor_ms is a list with bin_nor_ms and T_bin_nor_ms
-    ThickParamYoung : int or float --> weight of the stars in the Young Thick disc. Set to "fit" to compute it by adding T-SFH10 and T-SFH11 to the galactic parameters to fit
+    ThickParamYoung : int or float --> weight of the stars in the Young Thick disc. Set to "fit" to compute it by adding SFH9T, SFH10T, SFH11T, and SFH12T to the galactic parameters to fit
     HaloParam : int or float --> weight of the stars in the Halo
     BarParam : int or float --> weight of the stars in the Bar
     ThickParamOld : int or float --> weight of the stars in the Old Thick disc
@@ -424,7 +424,7 @@ class bgmfast_simulation:
         tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
         T_tau_min_edges : list --> lower limits of the age intervals of the young thick disc
         T_tau_max_edges : list --> upper limits of the age intervals of the young thick disc
-        ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding T-SFH10 and T-SFH11 to the Galactic parameters to fit
+        ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding SFH9T, SFH10T, SFH11T, and SFH12T to the Galactic parameters to fit
         HaloParam : int or float --> weight of the halo stars
         BarParam : int or float --> weight of the bar stars
         ThickParamOld : int or float --> weight of the old thick disc stars
@@ -796,88 +796,88 @@ class bgmfast_simulation:
                     alpha3_ps = param[value[1]]
                 elif value[0]=='fixed':
                     alpha3_ps = value[1]
-            elif key=='sfh1':
+            elif key=='SFH0':
                 if value[0]=='free':
-                    sfh1_ps = param[value[1]]
+                    SFH0_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh1_ps = value[1]
-            elif key=='sfh2':
+                    SFH0_ps = value[1]
+            elif key=='SFH1':
                 if value[0]=='free':
-                    sfh2_ps = param[value[1]]
+                    SFH1_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh2_ps = value[1]
-            elif key=='sfh3':
+                    SFH1_ps = value[1]
+            elif key=='SFH2':
                 if value[0]=='free':
-                    sfh3_ps = param[value[1]]
+                    SFH2_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh3_ps = value[1]
-            elif key=='sfh4':
+                    SFH2_ps = value[1]
+            elif key=='SFH3':
                 if value[0]=='free':
-                    sfh4_ps = param[value[1]]
+                    SFH3_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh4_ps = value[1]
-            elif key=='sfh5':
+                    SFH3_ps = value[1]
+            elif key=='SFH4':
                 if value[0]=='free':
-                    sfh5_ps = param[value[1]]
+                    SFH4_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh5_ps = value[1]
-            elif key=='sfh6':
+                    SFH4_ps = value[1]
+            elif key=='SFH5':
                 if value[0]=='free':
-                    sfh6_ps = param[value[1]]
+                    SFH5_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh6_ps = value[1]
-            elif key=='sfh7':
+                    SFH5_ps = value[1]
+            elif key=='SFH6':
                 if value[0]=='free':
-                    sfh7_ps = param[value[1]]
+                    SFH6_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh7_ps = value[1]
-            elif key=='sfh8':
+                    SFH6_ps = value[1]
+            elif key=='SFH7':
                 if value[0]=='free':
-                    sfh8_ps = param[value[1]]
+                    SFH7_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh8_ps = value[1]
-            elif key=='sfh9':
+                    SFH7_ps = value[1]
+            elif key=='SFH8':
                 if value[0]=='free':
-                    sfh9_ps = param[value[1]]
+                    SFH8_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh9_ps = value[1]
-            elif key=='sfh10':
+                    SFH8_ps = value[1]
+            elif key=='SFH9':
                 if value[0]=='free':
-                    sfh10_ps = param[value[1]]
+                    SFH9_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh10_ps = value[1]
-            elif key=='sfh11':
+                    SFH9_ps = value[1]
+            elif key=='SFH10':
                 if value[0]=='free':
-                    sfh11_ps = param[value[1]]
+                    SFH10_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    sfh11_ps = value[1]
-            elif key=='T-sfh10':
+                    SFH10_ps = value[1]
+            elif key=='SFH9T':
                 if value[0]=='free':
-                    T_sfh10_ps = param[value[1]]
+                    SFH9T_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    T_sfh10_ps = value[1]
-            elif key=='T-sfh11':
+                    SFH9T_ps = value[1]
+            elif key=='SFH10T':
                 if value[0]=='free':
-                    T_sfh11_ps = param[value[1]]
+                    SFH10T_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    T_sfh11_ps = value[1]
-            elif key=='T-sfh12':
+                    SFH10T_ps = value[1]
+            elif key=='SFH11T':
                 if value[0]=='free':
-                    T_sfh12_ps = param[value[1]]
+                    SFH11T_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    T_sfh12_ps = value[1]
-            elif key=='T-sfh13':
+                    SFH11T_ps = value[1]
+            elif key=='SFH12T':
                 if value[0]=='free':
-                    T_sfh13_ps = param[value[1]]
+                    SFH12T_ps = param[value[1]]
                 elif value[0]=='fixed':
-                    T_sfh13_ps = value[1]
+                    SFH12T_ps = value[1]
         
-        SigmaParam_ps = np.array([sfh1_ps, sfh2_ps, sfh3_ps, sfh4_ps, sfh5_ps + sfh6_ps, sfh7_ps + sfh8_ps, sfh9_ps + sfh10_ps + sfh11_ps])
-        midpopbin_ps = np.array([sfh5_ps, sfh6_ps, sfh7_ps, sfh8_ps])
-        lastpopbin_ps = np.array([sfh9_ps, sfh10_ps, sfh11_ps])
+        SigmaParam_ps = np.array([SFH0_ps, SFH1_ps, SFH2_ps, SFH3_ps, SFH4_ps + SFH5_ps, SFH6_ps + SFH7_ps, SFH8_ps + SFH9_ps + SFH10_ps])
+        midpopbin_ps = np.array([SFH4_ps, SFH5_ps, SFH6_ps, SFH7_ps])
+        lastpopbin_ps = np.array([SFH8_ps, SFH9_ps, SFH10_ps])
         
         if ThickParamYoung=='fit':
-            T_SigmaParam_ps = np.array([T_sfh10_ps, T_sfh11_ps, T_sfh12_ps, T_sfh13_ps])
+            T_SigmaParam_ps = np.array([SFH9T_ps, SFH10T_ps, SFH11T_ps, SFH12T_ps])
 
         # If some surface mass density is negative, then Lr='inf' and we redraw again
         if ThickParamYoung=='fit':

@@ -189,7 +189,7 @@ ms_file_parameters = {**sel_columns_ms.outdict(), **Gmax_ms.outdict()}
 
 #Parameters for the free and fixed BGM FASt parameters
 
-free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'sfh1': 3, 'sfh2': 4, 'sfh3': 5, 'sfh4': 6, 'sfh5': 7, 'sfh6': 8, 'sfh7': 9, 'sfh8': 10, 'sfh9': 11, 'sfh10': 12, 'sfh11': 13, 'T-sfh10': 14, 'T-sfh11': 15, 'T-sfh12': 16, 'T-sfh13': 17}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
+free_params = new_param('free_params', {'alpha1': 0, 'alpha2': 1, 'alpha3': 2, 'SFH0': 3, 'SFH1': 4, 'SFH2': 5, 'SFH3': 6, 'SFH4': 7, 'SFH5': 8, 'SFH6': 9, 'SFH7': 10, 'SFH8': 11, 'SFH9': 12, 'SFH10': 13, 'SFH9T': 14, 'SFH10T': 15, 'SFH11T': 16, 'SFH12T': 17}, info='Dictionary with the names of the free parameters as keys and the position in the list of free parameters as values')
 fixed_params = new_param('fixed_params', {}, info='Dictionary with the names of the fixed parameters and their values')
 
 bgmfast_parameters = {**free_params.outdict(), **fixed_params.outdict()}
