@@ -84,8 +84,8 @@ def display_as_table(set_of_params):
 
 #Parameters for the binning
 
-Xmin = new_param('Xmin', -0.42, 'mag', info='Minimum value for the binning in Bp-Rp range')
-Xmax = new_param('Xmax', 2.73, 'mag', info='Maximum value for the binning Bp-Rp range')
+Xmin = new_param('Xmin', -0.5, 'mag', info='Minimum value for the binning in Bp-Rp range')
+Xmax = new_param('Xmax', 2.5, 'mag', info='Maximum value for the binning Bp-Rp range')
 Ymin = new_param('Ymin', -5, 'mag', info="Minimum value for the binning M_G' range")
 Ymax = new_param('Ymax', 8.5, 'mag', info="Maximum value for the binning M_G' range")
 Bmin = new_param('Bmin', -90., 'deg', info='Minimum value for the binning of latitude')
