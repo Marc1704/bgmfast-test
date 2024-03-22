@@ -6,8 +6,147 @@ This script includes a set of functions that are needed to make BGM FASt work.
 
 
 import numpy as np
+import pandas as pd
 import scipy.integrate as integrate
 from bgmfast import parameters
+
+
+def generate_reduced_MS(Mother_Simulation_DF, x1, x4, mass_step, popbin_list, sel_columns, tau_ranges, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung):
+    
+    '''
+    Generate a reduced Mother Simulation with fake stars given a discretized range of masses and the different age bins in the SFH (tau ranges).
+    
+    Input parameters
+    ----------------
+    Mother_Simulation_DF : pyspark df --> original Mother Simulation filtered by limitting apparent magnitude and parallax>0.0
+    x1 : int or float --> minimum mass to generate a star
+    x4 : int or float --> maximum mass to generate a star
+    mass_step : int or float --> mass step for the definition of the reduced Mother Simulation
+    popbin_list : list --> Gaia PopBin values
+    sel_columns : dict --> name of the columns we want to keep from the file. The dictionary must follow this order: G, color, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
+    tau_ranges : list --> ranges of the different bins of the SFH, both for thin and thick disc in case ThickParamYoung='fit'
+    Xmin : int or float --> minimum value for the binning in G-Rp range
+    Xmax : int or float --> maximum value for the binning G-Rp range
+    Ymin : int or float --> minimum value for the binning M_G' range
+    Ymax : int or float --> maximum value for the binning M_G' range
+    Bmin : int or float --> minimum value for the binning of latitude
+    Bmax : int or float --> maximum value for the binning of latitude
+    Lmin : int or float --> minimum value for the binning of longitude
+    Lmax : int or float --> maximum value for the binning of longitude
+    blims : list --> limits of the latitude in the different M_G' ranges
+    llims : list --> limits of the longitude in the different M_G' ranges
+    Xstep : list --> G-Rp steps of the different G-Rp colour ranges
+    Ystep : list --> M_G' steps of the different G-Rp colour ranges
+    tau_min : int or float --> minimum age of a thin disc star
+    tau_max : int or float --> maximum age of a thin disc star
+    mass_min : int or float --> minimum mass to generate a star
+    mass_max : int or float --> maximum mass to generate a star
+    l_min : int or float --> minimum Galactic longitude
+    l_max : int or float --> maximum Galactic longitude
+    b_min : int or float --> minimum Galactic latitude
+    b_max : int or float --> maximum Galactic latitude
+    r_min : int or float --> minimum distance
+    r_max : int or float --> maximum distance
+    ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding SFH9T, SFH10T, SFH11T, and SFH12T to the Galactic parameters to fit
+    
+    Output parameters
+    -----------------
+    reduced_Mother_Simulation : pandas df --> table containing the reduced Mother Simulation
+    '''
+    
+    if ThickParamYoung=='fit':
+        tau_ranges, T_tau_ranges = tau_ranges
+        tau_min, T_tau_min = tau_min
+        tau_max, T_tau_max = tau_max 
+    
+    Mother_Simulation_DF = Mother_Simulation_DF.toPandas().astype(float)
+    
+    mass_iterations = int((x4 - x1)/mass_step) + 1
+
+    red_PopBin = []
+    red_Age = []
+    red_MassOut = []
+    red_matindex = []
+    count_valid_stars = 0
+    count_discarded_stars = 0
+    count_bins = 0
+    for popbin in popbin_list:
+        popbin_MS_DF = Mother_Simulation_DF[Mother_Simulation_DF[sel_columns['popbin']]==popbin]
+        if popbin<=7:
+            for age_ranges in tau_ranges[popbin - 1]:
+                low_age, up_age = [float(age) for age in age_ranges]
+                mean_age = low_age + (up_age - low_age)/2
+                age_popbin_MS_DF = popbin_MS_DF[(popbin_MS_DF[sel_columns['age']]>low_age) & (popbin_MS_DF[sel_columns['age']]<=up_age)]
+                for mass_iter in range(mass_iterations):
+                    count_bins += 1
+                    low_mass = float(x1 + mass_iter*mass_step)
+                    up_mass = float(x1 + (mass_iter + 1)*mass_step)
+                    mean_mass = x1 + (mass_iter + 0.5)*mass_step
+                    red_PopBin.append(popbin)
+                    red_Age.append(mean_age)
+                    red_MassOut.append(mean_mass)
+                    mass_age_popbin_MS_DF = age_popbin_MS_DF[(age_popbin_MS_DF[sel_columns['mass']]>=low_mass) & (age_popbin_MS_DF[sel_columns['mass']]<up_mass)]
+                    group_matindex = [compute_bin_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung) for index, x in mass_age_popbin_MS_DF.iterrows()]
+                    valid_stars = [matindex for matindex in group_matindex if matindex!=False]
+                    red_matindex.append(valid_stars)
+                    count_valid_stars += len(valid_stars)
+                    count_discarded_stars += len(group_matindex) - len(valid_stars)
+
+        elif popbin==8:
+            if ThickParamYoung=='fit':
+                for age_ranges in T_tau_ranges:
+                    low_age, up_age = [float(age) for age in age_ranges]
+                    mean_age = low_age + (up_age - low_age)/2
+                    age_popbin_MS_DF = popbin_MS_DF[(popbin_MS_DF[sel_columns['age']]>low_age) & (popbin_MS_DF[sel_columns['age']]<=up_age)]
+                    for mass_iter in range(mass_iterations):
+                        count_bins += 1
+                        low_mass = float(x1 + mass_iter*mass_step)
+                        up_mass = float(x1 + (mass_iter + 1)*mass_step)
+                        mean_mass = x1 + (mass_iter + 0.5)*mass_step
+                        red_PopBin.append(popbin)
+                        red_Age.append(mean_age)
+                        red_MassOut.append(mean_mass)
+                        mass_age_popbin_MS_DF = age_popbin_MS_DF[(age_popbin_MS_DF[sel_columns['mass']]>=low_mass) & (age_popbin_MS_DF[sel_columns['mass']]<up_mass)]
+                        group_matindex = [compute_bin_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung) for index, x in mass_age_popbin_MS_DF.iterrows()]
+                        valid_stars = [matindex for matindex in group_matindex if matindex!=False]
+                        red_matindex.append(valid_stars)
+                        count_valid_stars += len(valid_stars)
+                        count_discarded_stars += len(group_matindex) - len(valid_stars)
+            else:
+                count_bins += 1
+                red_PopBin.append(popbin)
+                red_Age.append(0)
+                red_MassOut.append(0)
+                mass_age_popbin_MS_DF = popbin_MS_DF
+                group_matindex = [compute_bin_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung) for index, x in mass_age_popbin_MS_DF.iterrows()]
+                valid_stars = [matindex for matindex in group_matindex if matindex!=False]
+                red_matindex.append(valid_stars)
+                count_valid_stars += len(valid_stars)
+                count_discarded_stars += len(group_matindex) - len(valid_stars)
+                                    
+        elif popbin>8:
+            count_bins += 1
+            red_PopBin.append(popbin)
+            red_Age.append(0)
+            red_MassOut.append(0)
+            mass_age_popbin_MS_DF = popbin_MS_DF
+            if ThickParamYoung=='fit':
+                group_matindex = [compute_bin_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung) for index, x in mass_age_popbin_MS_DF.iterrows()]
+            else:
+                group_matindex = [compute_bin_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung) for index, x in mass_age_popbin_MS_DF.iterrows()]
+            valid_stars = [matindex for matindex in group_matindex if matindex!=False]
+            red_matindex.append(valid_stars)
+            count_valid_stars += len(valid_stars)
+            count_discarded_stars += len(group_matindex) - len(valid_stars)
+            
+    print('Number of valid stars: %i' %count_valid_stars)
+    print('Number of stars discarded: %i' %count_discarded_stars)
+    print('Number of bins in the reduced Mother Simulation: %i' %count_bins)
+    
+    reduced_Mother_Simulation = {'PopBin': red_PopBin, 'Age': red_Age, 'MassOut': red_MassOut, 'Matindex': red_matindex}
+    reduced_Mother_Simulation = pd.DataFrame(reduced_Mother_Simulation)
+    
+    return reduced_Mother_Simulation
 
 
 def Continuity_Coeficients_func(alpha1, alpha2, alpha3, x1, x2, x3, x4):
@@ -108,6 +247,74 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
         ILS = np.nan
 
     return ILS, IBS, IXS, IYS
+
+
+def compute_bin_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung):
+
+    '''
+    Same as in binning_4D_Mvarpi function but checking also the constraints in age, mass, longitude, latitude, and distance.
+
+    Input parameters
+    ----------------
+    WP : list -->
+    Xmin : int or float --> minimum value for the binning in G-Rp range
+    Xmax : int or float --> maximum value for the binning in G-Rp range
+    Ymin : int or float --> minimum value for the binning in M_G' range
+    Ymax : int or float --> maximum value for the binning in M_G' range
+    Bmin : int or float --> minimum value for the binning in latitude
+    Bmax : int or float --> maximum value for the binning in latitude
+    Lmin : int or float --> minimum value for the binning in longitude
+    Lmax : int or float --> maximum value for the binning in longitude
+    blims : list --> limits of the different absolute latitude ranges
+    llims : list --> limits of the different longitude ranges
+    Xstep : list --> G-Rp steps of the different G-Rp ranges
+    Ystep : list --> M_G' steps of the different G-Rp ranges
+    tau_min : int or float or list --> minimum age of a thin disc star. In case ThickParamYoung=='fit', tau_min is a list with tau_min and T_tau_min
+    tau_max : int or float or list --> maximum age of a thin disc star. In case ThickParamYoung=='fit', tau_max is a list with tau_max and T_tau_max
+    mass_min : int or float --> minimum mass to generate a star
+    mass_max : int or float --> maximum mass to generate a star
+    l_min : int or float --> minimum Galactic longitude
+    l_max : int or float --> maximum Galactic longitude
+    b_min : int or float --> minimum Galactic latitude
+    b_max : int or float --> maximum Galactic latitude
+    r_min : int or float --> minimum distance
+    r_max : int or float --> maximum distance
+    ThickParamYoung : int or float --> weight of the stars in the Young Thick disc. Set to "fit" to compute it by adding SFH9T, SFH10T, SFH11T, and SFH12T to the galactic parameters to fit
+
+    Output parameters
+    -----------------
+    wpes : int --> weight of the star derived from BGM FASt
+    '''
+    
+    GRperr = float(WP[1])
+    popbin = float(WP[2])
+    tau = float(WP[3]) # Age of the star
+    mass = float(WP[4]) # Mass of the star
+    lstar = float(WP[5]) # Longitude of the star
+    bstar = float(WP[6]) # Latitude of the star
+    parallax = float(WP[7])
+    rstar = 1/parallax*1000. # Distance of the star (pc)
+    Mvarpi = float(WP[8])
+    
+    Sinput = [GRperr, lstar, bstar, Mvarpi]
+    matindex = binning_4D_Mvarpi(Sinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep)
+    
+    if ThickParamYoung=='fit':
+        tau_min, T_tau_min = tau_min
+        tau_max, T_tau_max = tau_max
+
+    if (popbin<=7 and tau_min<=tau<=tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max) or (popbin==8 and ThickParamYoung=='fit' and T_tau_min<=tau<=T_tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max) or popbin==8 or popbin==9 or popbin==10 or popbin==11:
+        pass
+        
+    else:
+        print('Not correct popbin %i or age %f' %(popbin, tau))
+        import sys
+        sys.exit()
+
+    if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
+        return False
+    else:
+        return matindex
 
 
 def Simplified_Gi_Primal_func_NONP(itau, smass, x1, x2, x3, K1, K2, K3, alpha1, alpha2, alpha3, SigmaParam, bin_nor, midpopbin, lastpopbin, imidpoptau, ilastpoptau, structure):

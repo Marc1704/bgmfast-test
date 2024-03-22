@@ -96,8 +96,10 @@ blims = new_param('blims', [[30, 90], [10, 30], [0, 10]], info='Limits of the di
 llims = new_param('llims', [[0, 360]], info='Limits of the different longitude ranges')
 Xstep = new_param('Xstep', 0.05, info="G-Rp steps of the different M_G' ranges")
 Ystep = new_param('Ystep', 0.25, info="M_G' steps of the different M_G' ranges")
+mass_step = new_param('mass_step', 0.01, info='Mass step for the definition of the reduced Mother Simulation')
+popbin_list = new_param('popbin_list', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], info='Gaia PopBin values')
 
-binning_parameters = {**Xmin.outdict(), **Xmax.outdict(), **Ymin.outdict(), **Ymax.outdict(), **Bmin.outdict(), **Bmax.outdict(), **Lmin.outdict(), **Lmax.outdict(), **blims.outdict(), **llims.outdict(), **Xstep.outdict(), **Ystep.outdict()}
+binning_parameters = {**Xmin.outdict(), **Xmax.outdict(), **Ymin.outdict(), **Ymax.outdict(), **Bmin.outdict(), **Bmax.outdict(), **Lmin.outdict(), **Lmax.outdict(), **blims.outdict(), **llims.outdict(), **Xstep.outdict(), **Ystep.outdict(), **mass_step.outdict(), **popbin_list.outdict()}
 
 
 #Parameters to define the accumulators' dimensions for the HR diagram ("1" corresponds to -1<M_G'<5 and "2" to 5<M_G'<15)
@@ -118,12 +120,14 @@ tau_min_edges = new_param('tau_min_edges', [0, 0.15, 1, 2, 3, 5, 7], 'Gyr', info
 tau_max_edges = new_param('tau_max_edges', [0.15, 1, 2, 3, 5, 7, 10], 'Gyr', info='Upper limits of the age subpopulations of the thin disc')
 T_tau_min_edges = new_param('T_tau_min_edges', [8, 9, 10, 11], 'Gyr', info='Lower limits of the age intervals of the young thick disc')
 T_tau_max_edges = new_param('T_tau_max_edges', [9, 10, 11, 12], 'Gyr', info='Upper limits of the age intervals of the young thick disc')
+tau_ranges = new_param('tau_ranges', [[[0, 0.15]], [[0.15, 1]], [[1, 2]], [[2, 3]], [[3, 4], [4, 5]], [[5, 6], [6, 7]], [[7, 8], [8, 9], [9, 10]]], info='Age ranges for of the non-parametric SFH of the Thin Disc')
+T_tau_ranges = new_param('T_tau_ranges', [[8, 9], [9, 10], [10, 11], [11, 12]], info='Age ranges for the non-parametric SFH of the Young Thick disc')
 ThickParamYoung = new_param('ThickParamYoung', 'fit', info='Weight of the young thick disc stars')
 HaloParam = new_param('HaloParam', 1, info='Weight of the halo stars')
 BarParam = new_param('BarParam', 1, info='Weight of the bar stars')
 ThickParamOld = new_param('ThickParamOld', 1, info='Weight of the old thick disc stars')
 
-general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **T_tau_min_edges.outdict(), **T_tau_max_edges.outdict(), **ThickParamYoung.outdict(), **HaloParam.outdict(), **BarParam.outdict(), **ThickParamOld.outdict()}
+general_parameters = {**x1.outdict(), **x4.outdict(), **tau_min_edges.outdict(), **tau_max_edges.outdict(), **T_tau_min_edges.outdict(), **T_tau_max_edges.outdict(), **tau_ranges.outdict(), **T_tau_ranges.outdict(), **ThickParamYoung.outdict(), **HaloParam.outdict(), **BarParam.outdict(), **ThickParamOld.outdict()}
 
 
 #Parameters for the Mother Simulation: MS-2306
@@ -173,7 +177,7 @@ constraints_parameters = {**tau_min.outdict(), **tau_max.outdict(), **T_tau_min.
 
 #Parameters for the import of the catalog file
 
-sel_columns_catalog = new_param('sel_columns_catalog', ['G','GRp','longitude','latitude', 'Mvarpi', 'parallax'])
+sel_columns_catalog = new_param('sel_columns_catalog', {'G':'G', 'color': 'GRp', 'longitude': 'longitude', 'latitude': 'latitude', 'Mvarpi': 'Mvarpi', 'parallax': 'parallax'})
 Gmax_catalog = new_param('Gmax_catalog', 13.0, 'mag')
 
 catalog_file_parameters = {**sel_columns_catalog.outdict(), **Gmax_catalog.outdict()}
@@ -181,7 +185,7 @@ catalog_file_parameters = {**sel_columns_catalog.outdict(), **Gmax_catalog.outdi
 
 #Parameters for the import of the Mother Simulation file
 
-sel_columns_ms = new_param('sel_columns_ms', ['Gerr','GRperr','PopBin','Age','MassOut','longitude','latitude','parallaxerr', 'Mvarpi'])
+sel_columns_ms = new_param('sel_columns_ms', {'G': 'Gerr', 'color': 'GRperr', 'popbin': 'PopBin', 'age': 'Age', 'mass': 'MassOut', 'longitude': 'longitude', 'latitude': 'latitude', 'parallax': 'parallaxerr', 'Mvarpi': 'Mvarpi'})
 Gmax_ms = new_param('Gmax_ms', Gmax_catalog.value, 'mag')
 
 ms_file_parameters = {**sel_columns_ms.outdict(), **Gmax_ms.outdict()}

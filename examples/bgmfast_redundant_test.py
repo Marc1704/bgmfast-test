@@ -29,7 +29,8 @@ Gmax_ms = ms_file_parameters['Gmax_ms'].value
 # ***********************************************
 
 filename_catalog = "./input_data/catalog/Gaia_DR3_G13.csv"
-filename_ms = "./input_data/ms/ms_G13_err.csv"
+filename_ms = "./input_data/ms/ms_G13_err.csv" #set parquet='generate'
+#filename_ms = "./input_data/ms/ms_G13_err_reduced.parquet" #once generated, set parquet='open'
 
 # ***************************
 # SETTING BGM FAST SIMULATION
@@ -40,6 +41,7 @@ bgmfast_sim = bgmfast_simulation()
 
 #Open Spark session
 sc, spark = bgmfast_sim.open_spark_session()
+spark.sparkContext.setLogLevel("WARN")
 
 #Set parameters for the BGM FASt simulation
 bgmfast_sim.set_acc_parameters()
@@ -57,7 +59,7 @@ bgmfast_sim.read_catalog(filename_catalog, sel_columns_catalog, Gmax_catalog)
 catalog_data = bgmfast_sim.generate_catalog_cmd()
 
 #Read the Mother Simulation
-bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms)
+bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms, parquet='generate', num_partitions=100)
 
 # ************************************************
 # RUNNING BGMFAST SIMULATION WITH FIXED PARAMETERS
@@ -95,7 +97,7 @@ spark.stop()
 
 #Compute the distance between the catalog and the Mother Simulation Hess diagrams
 comparison = analysis_tools.compare_hess_diagrams()
-colnames_ms = ['Gerr', 'GRperr', 'longitude', 'latitude', 'Mvarpi', 'parallaxerr']
+colnames_ms = {'G': 'Gerr', 'color': 'GRperr', 'longitude': 'longitude', 'latitude': 'latitude', 'Mvarpi': 'Mvarpi', 'parallax': 'parallaxerr'}
 ms_cmd, ms_data = comparison.generate_catalog_hess_diagram(filename_ms, colnames_ms, Gmax_ms)
 distance = comparison.compute_distance(catalog_data, ms_data)
 print('Distance between Gaia DR3 and the Mother Simulation:', distance)

@@ -7,6 +7,8 @@ This script is intented to include all the functions working within the Pyspark 
 
 import numpy as np
 import time, sys
+import pandas as pd
+import ast
 from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.accumulators import AccumulatorParam
@@ -115,36 +117,14 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     return cpes
 
 
-def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple):
+def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc):
 
     '''
-    Compute the weight of a given star. It uses Equation (37) from Mor et al. 2018 without integrating. The integral is conceptual, because it defines the integration over an increment (bin) of the N-dimensional space defined in Eq. (6). We reduce this increment until the end, when we only consider the star itself. At that point, the increment is exactly equal to the differential (both of them are the star itself) and the integral blows up.
+    Compute the weight of a given mass-age bin and assign it to all the stars within the bin. It uses Equation (37) from Mor et al. 2018 without integrating. The integral is conceptual, because it defines the integration over an increment (bin) of the N-dimensional space defined in Eq. (6). We reduce this increment until the end, when we only consider the star itself. At that point, the increment is exactly equal to the differential (both of them are the star itself) and the integral blows up.
 
     Input parameters
     ----------------
     WP : list -->
-    Xmin : int or float --> minimum value for the binning in G-Rp range
-    Xmax : int or float --> maximum value for the binning in G-Rp range
-    Ymin : int or float --> minimum value for the binning in M_G' range
-    Ymax : int or float --> maximum value for the binning in M_G' range
-    Bmin : int or float --> minimum value for the binning in latitude
-    Bmax : int or float --> maximum value for the binning in latitude
-    Lmin : int or float --> minimum value for the binning in longitude
-    Lmax : int or float --> maximum value for the binning in longitude
-    blims : list --> limits of the different absolute latitude ranges
-    llims : list --> limits of the different longitude ranges
-    Xstep : list --> G-Rp steps of the different G-Rp ranges
-    Ystep : list --> M_G' steps of the different G-Rp ranges
-    tau_min : int or float or list --> minimum age of a thin disc star. In case ThickParamYoung=='fit', tau_min is a list with tau_min and T_tau_min
-    tau_max : int or float or list --> maximum age of a thin disc star. In case ThickParamYoung=='fit', tau_max is a list with tau_max and T_tau_max
-    mass_min : int or float --> minimum mass to generate a star
-    mass_max : int or float --> maximum mass to generate a star
-    l_min : int or float --> minimum Galactic longitude
-    l_max : int or float --> maximum Galactic longitude
-    b_min : int or float --> minimum Galactic latitude
-    b_max : int or float --> maximum Galactic latitude
-    r_min : int or float --> minimum distance
-    r_max : int or float --> maximum distance
     x1 : int or float --> minimum mass to generate a star
     x2_ps : int or float --> first mass limit of the IMF for the BGM FASt simulation
     x3_ps : int or float --> second mass limit of the IMF for the BGM FASt simulation
@@ -175,30 +155,20 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
     BarParam : int or float --> weight of the stars in the Bar
     ThickParamOld : int or float --> weight of the stars in the Old Thick disc
     acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
-    simple : pyspark accumulator --> Pyspark simple accumulator that counts the stars that are not within the considered ranges or that have suffered some problem during the computations
 
     Output parameters
     -----------------
     wpes : int --> weight of the star derived from BGM FASt
     '''
-
-    wpes = 1
-    GRperr = float(WP[1])
-    popbin = float(WP[2]) # BGM population bin
-    tau = float(WP[3]) # Age of the star
-    mass = float(WP[4]) # Mass of the star
-    lstar = float(WP[5]) # Longitude of the star
-    bstar = float(WP[6]) # Latitude of the star
-    parallax = float(WP[7])
-    rstar = 1/parallax*1000. # Distance of the star (pc)
-    Mvarpi = float(WP[8])
     
-    Sinput = [GRperr, lstar, bstar, Mvarpi]
-    matindex = binning_4D_Mvarpi(Sinput, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep)
+    
+    wpes = 1
+    popbin = float(WP[0]) # BGM population bin
+    tau = float(WP[1]) # Age of the star
+    mass = float(WP[2]) # Mass of the star
+    matindex = WP[3]
     
     if ThickParamYoung=='fit':
-        tau_min, T_tau_min = tau_min
-        tau_max, T_tau_max = tau_max
         SigmaParam_ps, T_SigmaParam_ps = SigmaParam_ps
         bin_nor_ps, T_bin_nor_ps = bin_nor_ps
         SigmaParam_ms, T_SigmaParam_ms = SigmaParam_ms
@@ -242,7 +212,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
         else:
             itau = np.nan
 
-    if popbin<=7 and tau_min<=tau<=tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
+    if popbin<=7:
         itau = int(popbin)-1
 
         PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, bin_nor_ps, midpopbin_ps, lastpopbin_ps, imidpoptau, ilastpoptau, structure='thin'))
@@ -256,7 +226,7 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
         else:
             wpes = PS/MS
     
-    elif popbin==8 and ThickParamYoung=='fit' and T_tau_min<=tau<=T_tau_max and mass_min<=mass<=mass_max and l_min<=lstar<=l_max and b_min<=bstar<=b_max and r_min<=rstar<=r_max:
+    elif popbin==8 and ThickParamYoung=='fit':
         
         PS = float(Simplified_Gi_Primal_func_NONP(itau, mass, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, T_SigmaParam_ps, T_bin_nor_ps, T_midpopbin_ps, T_lastpopbin_ps, T_imidpoptau, T_ilastpoptau, structure='youngthick'))
 
@@ -285,12 +255,10 @@ def wpes_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, 
         print('Not correct popbin %i or age %f' %(popbin, tau))
         import sys
         sys.exit()
-
-    if (np.isnan(matindex[0]) or np.isnan(matindex[1]) or np.isnan(matindex[2]) or np.isnan(matindex[3])):
-        simple.add(1)
-    else:
-        acc.add([int(matindex[0]),int(matindex[1]),int(matindex[2]),int(matindex[3]),wpes])
-
+        
+    for starbin in matindex:
+        acc.add([int(starbin[0]),int(starbin[1]),int(starbin[2]),int(starbin[3]),wpes])
+        
     return wpes
 
 
@@ -312,8 +280,8 @@ class bgmfast_simulation:
         logfile : str or False --> directory of the log file
         '''
 
-        print('=======================================================================')
-        print('\n****************** Welcome to BGM FASt version 0.0.5 ******************\n')
+        print('\n=======================================================================')
+        print('\n****************** Welcome to BGM FASt version 0.1.0 ******************\n')
         print('=======================================================================')
 
         self.num_sim = 0
@@ -371,7 +339,9 @@ class bgmfast_simulation:
 
 
     def set_binning_parameters(self,
-                               Xmin=binning_parameters['Xmin'].value, Xmax=binning_parameters['Xmax'].value, Ymin=binning_parameters['Ymin'].value, Ymax=binning_parameters['Ymax'].value, Bmin=binning_parameters['Bmin'].value, Bmax=binning_parameters['Bmax'].value, Lmin=binning_parameters['Lmin'].value, Lmax=binning_parameters['Lmax'].value, blims=binning_parameters['blims'].value, llims=binning_parameters['llims'].value, Xstep=binning_parameters['Xstep'].value, Ystep=binning_parameters['Ystep'].value):
+                               Xmin=binning_parameters['Xmin'].value, Xmax=binning_parameters['Xmax'].value, Ymin=binning_parameters['Ymin'].value, Ymax=binning_parameters['Ymax'].value, Bmin=binning_parameters['Bmin'].value, Bmax=binning_parameters['Bmax'].value, Lmin=binning_parameters['Lmin'].value, Lmax=binning_parameters['Lmax'].value, blims=binning_parameters['blims'].value, llims=binning_parameters['llims'].value, Xstep=binning_parameters['Xstep'].value, Ystep=binning_parameters['Ystep'].value, 
+                               mass_step=binning_parameters['mass_step'].value, 
+                               popbin_list=binning_parameters['popbin_list'].value):
 
         '''
         Set binning parameters
@@ -390,6 +360,8 @@ class bgmfast_simulation:
         llims : list --> limits of the longitude in the different M_G' ranges
         Xstep : list --> G-Rp steps of the different G-Rp colour ranges
         Ystep : list --> M_G' steps of the different G-Rp colour ranges
+        mass_step : int or float --> Mass step for the definition of the reduced Mother Simulation
+        popbin_list : list --> Gaia PopBin values
         '''
 
         print('\nSetting binning parameters...\n')
@@ -406,11 +378,15 @@ class bgmfast_simulation:
         self.llims = llims
         self.Xstep = Xstep
         self.Ystep = Ystep
+        self.mass_step = mass_step
+        self.popbin_list = popbin_list
 
 
     def set_general_parameters(self,
                                x1=general_parameters['x1'].value, x4=general_parameters['x4'].value, tau_min_edges=general_parameters['tau_min_edges'].value, tau_max_edges=general_parameters['tau_max_edges'].value,
                                T_tau_min_edges=general_parameters['T_tau_min_edges'].value, T_tau_max_edges=general_parameters['T_tau_max_edges'].value,
+                               tau_ranges=general_parameters['tau_ranges'].value,
+                               T_tau_ranges=general_parameters['T_tau_ranges'].value,
                                ThickParamYoung=general_parameters['ThickParamYoung'].value, HaloParam=general_parameters['HaloParam'].value, BarParam=general_parameters['BarParam'].value, ThickParamOld=general_parameters['ThickParamOld'].value):
 
         '''
@@ -424,6 +400,8 @@ class bgmfast_simulation:
         tau_max_edges : list --> upper limits of the age subpopulations of the thin disc
         T_tau_min_edges : list --> lower limits of the age intervals of the young thick disc
         T_tau_max_edges : list --> upper limits of the age intervals of the young thick disc
+        tau_ranges : list --> age ranges for of the non-parametric SFH of the Thin Disc
+        T_tau_ranges : list --> age ranges for the non-parametric SFH of the Young Thick disc
         ThickParamYoung : int, float or str --> weight of the young thick disc stars. Set to "fit" to compute it by adding SFH9T, SFH10T, SFH11T, and SFH12T to the Galactic parameters to fit
         HaloParam : int or float --> weight of the halo stars
         BarParam : int or float --> weight of the bar stars
@@ -436,6 +414,7 @@ class bgmfast_simulation:
         self.x4 = x4
         self.tau_min_edges = tau_min_edges
         self.tau_max_edges = tau_max_edges
+        self.tau_ranges = tau_ranges
         self.ThickParamYoung = ThickParamYoung
         self.HaloParam = HaloParam
         self.BarParam = BarParam
@@ -444,6 +423,7 @@ class bgmfast_simulation:
         if self.ThickParamYoung=='fit':
             self.T_tau_min_edges = T_tau_min_edges
             self.T_tau_max_edges = T_tau_max_edges
+            self.T_tau_ranges = T_tau_ranges
 
 
     def set_ms_parameters(self,
@@ -579,7 +559,7 @@ class bgmfast_simulation:
         Input parameters
         ----------------
         filename : str --> directory of the catalog file. Example: /home/username/bgmfast/inputs/gaiaDR3_G13.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, G-Rp, longitude, latitude, M_G' and parallax
+        sel_columns : dict --> name of the columns we want to keep from the file. The dictionary must follow this order: G, color, longitude, latitude, Mvarpi and parallax
         Gmax : int or float --> limitting magnitude
 
         Output parameters
@@ -591,38 +571,96 @@ class bgmfast_simulation:
 
         spark = self.spark
         
-        catalog = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.catalog = catalog.filter((catalog[sel_columns[0]]<Gmax) & (catalog[sel_columns[5]]!='') & (catalog[sel_columns[5]]>0.0) & (catalog[sel_columns[1]]!=''))
+        catalog = spark.read.option("header","true").csv(filename).select(list(sel_columns.values()))
+        self.catalog = catalog.filter((catalog[sel_columns['G']]<float(Gmax)) & (catalog[sel_columns['parallax']]!='') & (catalog[sel_columns['parallax']]>float(0.0)) & (catalog[sel_columns['color']]!=''))
         
         return self.catalog
 
 
-    def read_ms(self, filename, sel_columns, Gmax):
+    def read_ms(self, filename, sel_columns, Gmax, parquet, num_partitions='default'):
 
         '''
         Read the Mother Simulation file using Spark. The data is filtered taking only stars with Gerr<Gmax and with positive parallax
 
         Input parameters
         ----------------
-        filename : str --> directory of the Mother Simulation file. Example: /home/username/bgmfast/inputs/ms_G13_errors_bgmfast.csv
-        sel_columns : str or list --> name of the columns we want to keep from the file. The list must follow this order: G, G-Rp, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
+        filename : str --> directory of the Mother Simulation file or the parquet file with the reduced Mother Simulation (see parquet parameter). Example: /home/username/bgmfast/inputs/ms_G13_errors_bgmfast.csv
+        sel_columns : dict --> name of the columns we want to keep from the file. The dictionary must follow this order: G, color, PopBin, age, mass, longitude, latitude, parallax, Mvarpi
         Gmax : int or float --> limitting magnitude
+        parquet : str or bool --> wether we want to "generate" a parquet file with the reduced Mother Simulation for faster import in the future, or "open" the reduced Mother Simulation generated in another run
+        num_partitions : str or int --> number of partitions into which we want to divide the Pyspark dataframe. 'default' option does not modify the original number of partitions
 
         Output parameters
         -----------------
         Mother_Simulation_DF : dataframe --> table with the data of the Mother Simulation file
         '''
 
-        print('\nReading the Mother Simulation file...\n')
-
         spark = self.spark
+        
+        if parquet=='generate':
+            print('\nCreating reduced Mother Simulation parquet file...')
+            
+            Xmin = self.Xmin
+            Xmax = self.Xmax
+            Ymin = self.Ymin
+            Ymax = self.Ymax
+            Bmin = self.Bmin
+            Bmax = self.Bmax
+            Lmin = self.Lmin
+            Lmax = self.Lmax
+            blims = self.blims
+            llims = self.llims
+            Xstep = self.Xstep
+            Ystep = self.Ystep
+            mass_step = self.mass_step
+            popbin_list = self.popbin_list
+            
+            tau_min = self.tau_min
+            T_tau_min = self.T_tau_min
+            tau_max = self.tau_max
+            T_tau_max = self.T_tau_max
+            mass_min = self.mass_min
+            mass_max = self.mass_max
+            l_min = self.l_min
+            l_max = self.l_max
+            b_min = self.b_min
+            b_max = self.b_max
+            r_min = self.r_min
+            r_max = self.r_max
+            ThickParamYoung = self.ThickParamYoung
+            
+            tau_ranges = self.tau_ranges
+            T_tau_ranges = self.T_tau_ranges
+            
+            x1 = self.x1
+            x4 = self.x4
+            
+            Mother_Simulation_DFa = spark.read.option("header","true").csv(filename).select(list(sel_columns.values()))
+            
+            Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa[sel_columns['G']]<float(Gmax)) & (Mother_Simulation_DFa[sel_columns['parallax']]>float(0.0)))
+            
+            del Mother_Simulation_DFa
 
-        Mother_Simulation_DFa = spark.read.option("header","true").csv(filename).select(sel_columns)
-        self.Mother_Simulation_DF = Mother_Simulation_DFa.filter((Mother_Simulation_DFa[sel_columns[0]]<Gmax) & (Mother_Simulation_DFa[sel_columns][7]>0.0))
-
-        self.Mother_Simulation_DF.cache() # Checking that the file is correct
-
-        return self.Mother_Simulation_DF
+            Mother_Simulation_DF.cache() # Checking that the file is correct
+            
+            if ThickParamYoung=='fit':
+                self.reduced_Mother_Simulation = generate_reduced_MS(Mother_Simulation_DF, x1, x4, mass_step, popbin_list, sel_columns, [tau_ranges, T_tau_ranges], Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung)
+            else:
+                self.reduced_Mother_Simulation = generate_reduced_MS(Mother_Simulation_DF, x1, x4, mass_step, popbin_list, sel_columns, tau_ranges, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung)
+                
+            self.reduced_Mother_Simulation = self.spark.createDataFrame(self.reduced_Mother_Simulation)
+            self.reduced_Mother_Simulation.write.parquet(filename.split('.csv')[0] + '_reduced.parquet', mode='overwrite')
+        
+        elif parquet=='open':
+            print('\nOpening reduced Mother Simulation parquet file...')
+            self.reduced_Mother_Simulation = spark.read.parquet(filename)
+        
+        print('\nDefault number of partitions:', self.reduced_Mother_Simulation.rdd.getNumPartitions())
+        if num_partitions!='default':
+            self.reduced_Mother_Simulation = self.reduced_Mother_Simulation.repartition(num_partitions)
+            print('\nNew number of partitions:', self.reduced_Mother_Simulation.rdd.getNumPartitions())
+        
+        return self.reduced_Mother_Simulation
 
 
     def accumulators_init(self):
@@ -731,34 +769,6 @@ class bgmfast_simulation:
         if ThickParamYoung=='fit':
             T_tau_min_edges = self.T_tau_min_edges
             T_tau_max_edges = self.T_tau_max_edges
-
-        Xmin = self.Xmin
-        Xmax = self.Xmax
-        Ymin = self.Ymin
-        Ymax = self.Ymax
-        Bmin = self.Bmin
-        Bmax = self.Bmax
-        Lmin = self.Lmin
-        Lmax = self.Lmax
-        blims = self.blims
-        llims = self.llims
-        Xstep = self.Xstep
-        Ystep = self.Ystep
-
-        tau_min = self.tau_min
-        tau_max = self.tau_max
-        mass_min = self.mass_min
-        mass_max = self.mass_max
-        l_min = self.l_min
-        l_max = self.l_max
-        b_min = self.b_min
-        b_max = self.b_max
-        r_min = self.r_min
-        r_max = self.r_max
-        
-        if ThickParamYoung=='fit':
-            T_tau_min = self.T_tau_min
-            T_tau_max = self.T_tau_max
 
         x2_ms = self.x2_ms
         x3_ms = self.x3_ms
@@ -891,8 +901,8 @@ class bgmfast_simulation:
                 current_datetime = datetime.now()
                 formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
                 
-                self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, [tau_min, T_tau_min], [tau_max, T_tau_max], mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, lastpopbin_ps, [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, lastpopbin_ms, [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
-                
+                self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, lastpopbin_ps, [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, lastpopbin_ms, [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc))
+
                 end = time.time()
                 self.num_sim += 1
 
@@ -917,7 +927,7 @@ class bgmfast_simulation:
             current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
-            self.Mother_Simulation_DF.foreach(lambda x: wpes_func(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc, simple))
+            self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc))
 
             end = time.time()
             self.num_sim += 1

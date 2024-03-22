@@ -29,7 +29,8 @@ Gmax_ms = ms_file_parameters['Gmax_ms'].value
 # ***********************************************
 
 filename_catalog = "./input_data/catalog/Gaia_DR3_G13.csv"
-filename_ms = "./input_data/ms/ms_G13_err.csv"
+filename_ms = "./input_data/ms/ms_G13_err.csv" #set parquet='generate'
+#filename_ms = "./input_data/ms/ms_G13_err_reduced.parquet" #once generated, set parquet='open'
 
 # ***************************
 # SETTING BGM FAST SIMULATION
@@ -40,6 +41,7 @@ bgmfast_sim = bgmfast_simulation()
 
 #Open Spark session
 sc, spark = bgmfast_sim.open_spark_session()
+spark.sparkContext.setLogLevel("WARN")
 
 #Set parameters for the BGM FASt simulation
 bgmfast_sim.set_acc_parameters()
@@ -57,7 +59,7 @@ bgmfast_sim.read_catalog(filename_catalog, sel_columns_catalog, Gmax_catalog)
 catalog_data = bgmfast_sim.generate_catalog_cmd()
 
 #Read the Mother Simulation
-bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms)
+bgmfast_sim.read_ms(filename_ms, sel_columns_ms, Gmax_ms, parquet='generate', num_partitions=100)
 
 # ************************************************
 # RUNNING BGMFAST SIMULATION WITH FIXED PARAMETERS
@@ -89,7 +91,6 @@ simulation_data = bgmfast_sim.run_simulation(param)
 
 #Compute the distance between catalog and simulation Hess diagrams
 print('Distance for the parameters in the Mother Simulation:', dist_metric_gdaf2(catalog_data, simulation_data))
-#Precisely following this example, you should get a value of distance = 512187.55203569063
 
 #End the Spark session
 spark.stop()
