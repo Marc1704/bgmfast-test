@@ -1,4 +1,4 @@
-import subprocess, os
+import subprocess, os, signal
 
 try:
     logs = subprocess.Popen(["python3","monitoring.py"])
