@@ -97,6 +97,7 @@ spark.stop()
 
 #Compute the distance between the catalog and the Mother Simulation Hess diagrams
 comparison = analysis_tools.compare_hess_diagrams()
+filename_ms = "./input_data/ms/ms_G13_err.csv"
 colnames_ms = {'G': 'Gerr', 'color': 'GRperr', 'longitude': 'longitude', 'latitude': 'latitude', 'Mvarpi': 'Mvarpi', 'parallax': 'parallaxerr'}
 ms_cmd, ms_data = comparison.generate_catalog_hess_diagram(filename_ms, colnames_ms, Gmax_ms)
 distance = comparison.compute_distance(catalog_data, ms_data)

@@ -865,16 +865,16 @@ class compare_hess_diagrams:
                     cmap = plt.cm.jet
                     cmap.set_bad(color="white")
 
-                    cmap2 = plt.cm.get_cmap('BuPu')
+                    cmap2 = plt.cm.get_cmap('gist_stern').reversed()
+                    #cmap2 = plt.cm.get_cmap('terrain').reversed()
+                    #cmap2 = plt.cm.get_cmap('gist_earth').reversed()
                     cmap2.set_bad(color="white")
 
                     cmap3 = plt.cm.get_cmap('RdYlGn')
                     cmap3.set_bad(color='white')
 
                     axs[lat, col].set_xlim(Xmin, Xmax)
-                    axs[lat, col].set_ylim(10, Ymin)
-                    axs[lat, col].axhline(5, color='black', lw=0.5)
-
+                    axs[lat, col].set_ylim(Ymax, Ymin)
                     if col==0:
                         CMD = np.log10(catalog1_cmd[lon][lat]).T
                         norm_hess = colors.Normalize(vmin=0, vmax=np.log10(limits_hess))
