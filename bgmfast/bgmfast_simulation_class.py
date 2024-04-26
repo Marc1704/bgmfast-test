@@ -65,6 +65,56 @@ class MatrixAccumulatorParam(AccumulatorParam):
             mAdd += sindex
 
         return mAdd
+    
+    
+class SmallMatrixAccumulatorParam(AccumulatorParam):
+
+    '''
+    Define a matrix accumulator of 2 dimensions
+
+    Input parameters
+    ----------------
+    AccumulatorParam : pyspark.accumulators.AccumulatorParam --> Pyspark parameter needed for the definition of Pyspark accumulator matrixs
+    '''
+
+    def zero(self, inimatriu):
+        '''
+        Define a matrix of full of zeros
+
+        Input parameters
+        ----------------
+        inimatriu : numpy array --> numpy array with the shape we want for the Pyspark accumulator
+
+        Output parameters
+        -----------------
+        MATRIXINI : numpy array --> numpy array with the shape we want for the Pyspark accumulator full of zeros
+        '''
+
+        MATRIXINI = np.zeros(inimatriu.shape)
+
+        return MATRIXINI
+
+
+    def addInPlace(self, mAdd, sindex):
+        '''
+        Add an element to the accumulator in a given place
+
+        Input parameters
+        ----------------
+        mAdd : Pyspark accumulator? --> accumulator into which we want to add an element
+        sindex : list --> list with one or three elements containing the coordinates in the 2-dimensional (mass, popbin) space of the Pyspark accumulator into which we want to put the element. The last element defines the value we want to add in that coordinates
+
+        Output parameters
+        -----------------
+        mAdd : Pyspark accumulator? --> updated mAdd
+        '''
+
+        if type(sindex)==list:
+            mAdd[sindex[0], sindex[1]] += sindex[2]
+        else:
+            mAdd += sindex
+
+        return mAdd
 
 
 # ****************
@@ -117,7 +167,7 @@ def pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims,
     return cpes
 
 
-def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc):
+def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, mass_min, mass_step, tau_ranges, acc, smallacc):
 
     '''
     Compute the weight of a given mass-age bin and assign it to all the stars within the bin. It uses Equation (37) from Mor et al. 2018 without integrating. The integral is conceptual, because it defines the integration over an increment (bin) of the N-dimensional space defined in Eq. (6). We reduce this increment until the end, when we only consider the star itself. At that point, the increment is exactly equal to the differential (both of them are the star itself) and the integral blows up.
@@ -154,7 +204,11 @@ def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, a
     HaloParam : int or float --> weight of the stars in the Halo
     BarParam : int or float --> weight of the stars in the Bar
     ThickParamOld : int or float --> weight of the stars in the Old Thick disc
+    mass_min : 
+    mass_step : 
+    tau_ranges : 
     acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the complete Hess diagram
+    smallacc : pyspark accumulator --> 2-dimensional Pyspark accumulator (Mass + Popbin)
 
     Output parameters
     -----------------
@@ -225,6 +279,10 @@ def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, a
             wpes = 1
         else:
             wpes = PS/MS
+        
+        S = [mass, popbin, tau]
+        masstaubin = binning_2D(S, mass_min, mass_step, tau_ranges, ThickParamYoung)
+        smallacc.add([int(masstaubin[0]), int(masstaubin[1]), wpes*len(matindex)])
     
     elif popbin==8 and ThickParamYoung=='fit':
         
@@ -238,6 +296,10 @@ def wpes_func(WP, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, a
             wpes = 1
         else:
             wpes = PS/MS
+            
+        S = [mass, popbin, tau]
+        masstaubin = binning_2D(S, mass_min, mass_step, tau_ranges, ThickParamYoung)
+        smallacc.add([int(masstaubin[0]), int(masstaubin[1]), wpes*len(matindex)])
 
     elif popbin==8:
         wpes = ThickParamYoung
@@ -336,6 +398,7 @@ class bgmfast_simulation:
         self.nColorbins = nColorbins
         self.nGbins = nGbins
         self.MatrixAccumulatorParam = MatrixAccumulatorParam
+        self.SmallMatrixAccumulatorParam = SmallMatrixAccumulatorParam
 
 
     def set_binning_parameters(self,
@@ -666,23 +729,33 @@ class bgmfast_simulation:
     def accumulators_init(self):
 
         '''
-        Initialize one 4-dimensional Pyspark accumulator with nLonbins times nLatbins times nColorbins times nGbins bins
+        Initialize one 4-dimensional and one 2-dimensional Pyspark accumulators with nLonbins times nLatbins times nColorbins times nGbins bins, and nMassbins times nTaubins bins, respectively
 
         Output parameters
         -----------------
         acc : pyspark accumulator --> 4-dimensional Pyspark accumulator (Hess diagram + latitude + longitude) containing the Hess diagram
         simple : pyspark accumulator --> Pyspark simple accumulator that counts the stars that are not within the considered ranges or that have suffered some problem during the computations
+        smallacc : pyspark accumulator --> 2-dimensional Pyspark accumulator (Mass + Popbin)
         '''
 
         sc = self.sc
         MatrixAccumulatorParam = self.MatrixAccumulatorParam
-
+        SmallMatrixAccumulatorParam = self.SmallMatrixAccumulatorParam
+        
+        self.nMassbins = int((self.x4 - self.x1)/self.mass_step) + 1
+        if self.ThickParamYoung=='fit':
+            self.nTaubins = len([tau_range for popbin_range in self.tau_ranges for tau_range in popbin_range]) + len(self.T_tau_ranges)
+        else:
+            self.nTaubins = len([tau_range for popbin_range in self.tau_ranges for tau_range in popbin_range])
+        
         MATRIXCMD = np.zeros((self.nLonbins, self.nLatbins, self.nColorbins, self.nGbins))
+        MATRIXsmall = np.zeros((self.nTaubins, self.nMassbins))
 
         self.acc = sc.accumulator(MATRIXCMD, MatrixAccumulatorParam())
         self.simple = sc.accumulator(0)
+        self.smallacc = sc.accumulator(MATRIXsmall, SmallMatrixAccumulatorParam())
 
-        return self.acc, self.simple
+        return self.acc, self.simple, self.smallacc
 
 
     def generate_catalog_cmd(self):
@@ -708,7 +781,7 @@ class bgmfast_simulation:
         Xstep = self.Xstep
         Ystep = self.Ystep
 
-        acc, simple = self.accumulators_init()
+        acc, simple = self.accumulators_init()[:2]
 
         self.catalog.foreach(lambda x: pes_catalog(x, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, acc, simple))
 
@@ -765,10 +838,14 @@ class bgmfast_simulation:
         HaloParam = self.HaloParam
         BarParam = self.BarParam
         ThickParamOld = self.ThickParamOld
+        mass_min = self.mass_min
+        mass_step = self.mass_step
+        tau_ranges = self.tau_ranges
         
         if ThickParamYoung=='fit':
             T_tau_min_edges = self.T_tau_min_edges
             T_tau_max_edges = self.T_tau_max_edges
+            T_tau_ranges = self.T_tau_ranges
 
         x2_ms = self.x2_ms
         x3_ms = self.x3_ms
@@ -787,7 +864,7 @@ class bgmfast_simulation:
             T_SigmaParam_ms = self.T_SigmaParam_ms
             T_bin_nor_ms = self.T_bin_nor_ms
 
-        acc, simple = self.accumulators_init()
+        acc, simple, smallacc = self.accumulators_init()
 
         # Explored parameters
         for key, value in self.all_params.items():
@@ -901,7 +978,7 @@ class bgmfast_simulation:
                 current_datetime = datetime.now()
                 formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
                 
-                self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, lastpopbin_ps, [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, lastpopbin_ms, [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc))
+                self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, [SigmaParam_ps, T_SigmaParam_ps], midpopbin_ps, lastpopbin_ps, [bin_nor_ps, T_bin_nor_ps], x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, [SigmaParam_ms, T_SigmaParam_ms], midpopbin_ms, lastpopbin_ms, [bin_nor_ms, T_bin_nor_ms], ThickParamYoung, HaloParam, BarParam, ThickParamOld, mass_min, mass_step, [tau_ranges, T_tau_ranges], acc, smallacc))
 
                 end = time.time()
                 self.num_sim += 1
@@ -912,6 +989,7 @@ class bgmfast_simulation:
 
                 self.acc = acc
                 self.simple = simple
+                self.smallacc = smallacc
 
                 self.simulation_data = self.return_cmd()[1]
                 
@@ -927,7 +1005,7 @@ class bgmfast_simulation:
             current_datetime = datetime.now()
             formatted_datetime = str(current_datetime.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4])
 
-            self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, acc))
+            self.reduced_Mother_Simulation.foreach(lambda x: wpes_func(x, x1, x2_ps, x3_ps, K1_ps, K2_ps, K3_ps, alpha1_ps, alpha2_ps, alpha3_ps, SigmaParam_ps, midpopbin_ps, lastpopbin_ps, bin_nor_ps, x2_ms, x3_ms, K1_ms, K2_ms, K3_ms, alpha1_ms, alpha2_ms, alpha3_ms, SigmaParam_ms, midpopbin_ms, lastpopbin_ms, bin_nor_ms, ThickParamYoung, HaloParam, BarParam, ThickParamOld, mass_min, mass_step, tau_ranges, acc, smallacc))
 
             end = time.time()
             self.num_sim += 1
@@ -938,6 +1016,7 @@ class bgmfast_simulation:
 
             self.acc = acc
             self.simple = simple
+            self.smallacc = smallacc
 
             self.simulation_data = self.return_cmd()[1]
 

@@ -249,6 +249,52 @@ def binning_4D_Mvarpi(S, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, 
     return ILS, IBS, IXS, IYS
 
 
+def binning_2D(S, mass_min, mass_step, tau_ranges, ThickParamYoung):
+
+    '''
+    Compute the position of a give star in bins in the discretized space of the 4-dimensional (latitude, longitude, G-Rp colour and absolute magnitude) accumulators
+
+    Input parameters
+    ----------------
+    S : list [mass, popbin, tau] --> mass, PopBin, and age of the bin
+
+    Output parameters
+    -----------------
+    ITPS : int --> bin number in the popbin-tau discretized space
+    IMS : int --> bin number in the mass discretized space
+    '''
+
+    MS = float(S[0]) # Mass
+    PS = float(S[1]) # PopBin
+    TS = float(S[2]) # Age
+    
+    if ThickParamYoung=='fit':
+        tau_ranges, T_tau_ranges = tau_ranges
+    tau_ranges_aux = [tau_range for popbin_range in tau_ranges for tau_range in popbin_range]
+    
+    if PS<=7:
+        for age_range, i in zip(tau_ranges_aux, range(len(tau_ranges_aux))):
+            if age_range[0]<=TS<=age_range[1]:
+                ITPS = i
+                break                
+    elif PS==8:
+        if ThickParamYoung=='fit':
+            for age_range, i in zip(T_tau_ranges, range(len(T_tau_ranges))):
+                if age_range[0]<=TS<=age_range[1]:
+                    ITPS = len(tau_ranges_aux) + i
+        else:
+            ITPS = len(tau_ranges_aux)
+    elif PS>8:
+        if ThickParamYoung=='fit':
+            ITPS = len(tau_ranges_aux) + len(T_tau_ranges) + (PS - 9)
+        else:
+            ITPS = len(tau_ranges_aux) + (PS - 8)
+            
+    IMS = int((MS - mass_min)/mass_step)
+
+    return ITPS, IMS
+
+
 def compute_bin_func(WP, Xmin, Xmax, Ymin, Ymax, Bmin, Bmax, Lmin, Lmax, blims, llims, Xstep, Ystep, tau_min, tau_max, mass_min, mass_max, l_min, l_max, b_min, b_max, r_min, r_max, ThickParamYoung):
 
     '''

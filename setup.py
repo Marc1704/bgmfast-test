@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bgmfast",
-    version="0.1.0",
+    version="0.1.1",
     autor="Marc del Alcázar i Julià",
     author_email="mdelalju@fqa.ub.edu",
     url="",

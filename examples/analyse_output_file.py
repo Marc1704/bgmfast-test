@@ -97,9 +97,9 @@ hess_diagram_analysis.build_hess_diagrams_plots(ms_cmd, catalog_cmd, distance_cm
 hess_diagram_analysis.compute_distance(catalog_data, ms_data)
 
 
-# ************************
-# BUILD FINAL HESS DIAGRAM
-# ************************
+# *******************************************
+# BUILD FINAL HESS DIAGRAM AND MASS-AGE SPACE
+# *******************************************
 
 bgmfast_sim = bgmfast_simulation(logfile=False)
 
@@ -150,6 +150,36 @@ distance_cmd, difference_cmd, quocient_cmd = hess_diagram_analysis.generate_diff
 hess_diagram_analysis.build_hess_diagrams_plots(simulation_cmd, catalog_cmd, distance_cmd, difference_cmd, quocient_cmd, titles=['BGM FASt', 'Gaia DR3', r'$\delta_P$(BGM FASt, Gaia DR3)', 'BGM FASt - Gaia DR3', 'BGM FASt/Gaia DR3'], limits=limits)
 
 hess_diagram_analysis.compute_distance(catalog_data, simulation_data)
+
+hess_diagram_analysis.build_mass_age_space(bgmfast_sim.smallacc.value, mass_range=[0, 120], mass_bins=20, show=True)
+
+
+# *****************************
+# BUILD ORIGINAL MASS-AGE SPACE
+# *****************************
+
+ms_params = parameters.ms_parameters 
+param = [ms_params['alpha1_ms'].value,
+         ms_params['alpha2_ms'].value,
+         ms_params['alpha3_ms'].value,
+         ms_params['SigmaParam_ms'].value[0],
+         ms_params['SigmaParam_ms'].value[1],
+         ms_params['SigmaParam_ms'].value[2],
+         ms_params['SigmaParam_ms'].value[3],
+         ms_params['midpopbin_ms'].value[0],
+         ms_params['midpopbin_ms'].value[1],
+         ms_params['midpopbin_ms'].value[2],
+         ms_params['midpopbin_ms'].value[3],
+         ms_params['lastpopbin_ms'].value[0],
+         ms_params['lastpopbin_ms'].value[1],
+         ms_params['lastpopbin_ms'].value[2],
+         ms_params['T_SigmaParam_ms'].value[0],
+         ms_params['T_SigmaParam_ms'].value[1], 
+         ms_params['T_SigmaParam_ms'].value[2], 
+         ms_params['T_SigmaParam_ms'].value[3]]
+
+bgmfast_sim.run_simulation(param)
+hess_diagram_analysis.build_mass_age_space(bgmfast_sim.smallacc.value, mass_range=[0, 120], mass_bins=20, show=True)
     
     
     

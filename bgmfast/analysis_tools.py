@@ -4,6 +4,7 @@ from bgmfast import parameters
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import pandas as pd
+import numpy as np
 from scipy.stats import gaussian_kde, pearsonr
 from datetime import datetime
 import corner
@@ -275,6 +276,7 @@ def build_sfh(tau_values, sfh_params, tau_ranges=parameters.general_parameters['
         fig.savefig(output, dpi=300)
     if show:
         plt.show()
+    plt.close()
 
     
 def build_imf(imf_ranges, imf_params, output=False, show=False, ms_imf=True, prior_imf_std=2, step=False, axis=False, return_val='mpv_quant', limits=[-1, 3]):
@@ -343,7 +345,7 @@ def build_imf(imf_ranges, imf_params, output=False, show=False, ms_imf=True, pri
         fig.savefig(output, dpi=300)
     if show:
         plt.show()
-        plt.close()
+    plt.close()
             
             
 def build_real_imf(imf_ranges, imf_params, output=False, show=False, ms_imf=True, prior_imf_std=2, step=False, axis=False, return_val='mpv_quant'):
@@ -420,7 +422,7 @@ def build_real_imf(imf_ranges, imf_params, output=False, show=False, ms_imf=True
         fig.savefig(output, dpi=300)
     if show:
         plt.show()
-        plt.close()
+    plt.close()
             
     
 def distance_evolution(distances, num_acc_sim, output=False, show=False):
@@ -465,7 +467,8 @@ def distance_evolution(distances, num_acc_sim, output=False, show=False):
         fig.savefig(output, dpi=300)
     if show:
         plt.show()
-
+    plt.close()
+        
     
 def parameter_evolution(param_name, param_data, num_acc_sim, output=False, show=False, plot_single_step={'median': True, 'median_quant': True, 'mpv': False, 'mpv_quant': False, 'min': False, 'max': False}, plot_acc={'median': False, 'median_quant': False, 'mpv': True, 'mpv_quant': True, 'min': False, 'max': False}):
     
@@ -608,6 +611,7 @@ def parameter_evolution(param_name, param_data, num_acc_sim, output=False, show=
         fig.savefig(output, dpi=300)
     if show:
         plt.show()
+    plt.close()
             
         
 def cornerplot(data, ranges, num_acc_sim, tau_ranges=parameters.general_parameters['tau_ranges'].value, num_decimals=2, dpi=300, output=False, show=False):
@@ -718,6 +722,7 @@ def cornerplot(data, ranges, num_acc_sim, tau_ranges=parameters.general_paramete
         figure.savefig(output, dpi=dpi)
     if show:
         plt.show()
+    plt.close()
 
 
 class compare_hess_diagrams:
@@ -736,6 +741,11 @@ class compare_hess_diagrams:
 
         self.bgmfast_sim.set_acc_parameters()
         self.bgmfast_sim.set_binning_parameters()
+        self.bgmfast_sim.set_general_parameters()
+        self.bgmfast_sim.set_ms_parameters()
+        self.bgmfast_sim.set_ps_parameters()
+        self.bgmfast_sim.set_constraints_parameters()
+        self.bgmfast_sim.set_bgmfast_parameters()
 
         pass
 
@@ -791,7 +801,7 @@ class compare_hess_diagrams:
         return distance_cmd, difference_cmd, quocient_cmd
     
     
-    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, quocient_cmd, output=False, show=True, titles=['Catalog 1', 'Catalog 2', r'$\delta_P$(Catalog 1, Catalog 2)', 'Catalog 1 - Catalog 2', 'Catalog 1/Catalog 2'], limits='auto'):
+    def build_hess_diagrams_plots(self, catalog1_cmd, catalog2_cmd, distance_cmd, difference_cmd, output=False, show=True, titles=['Catalog 1', 'Catalog 2', r'$\delta_P$(Catalog 1, Catalog 2)', 'Catalog 1 - Catalog 2'], limits='auto'):
         '''
         Build the Hess diagrams of two catalogs and their differences
         
@@ -802,10 +812,9 @@ class compare_hess_diagrams:
         Note: when comparing simulations and observed data, catalog 1 refers to the simulation and catalog 2 to the data according to Eq. (58) from Mor et al. 2018 for the computation of the distance
         distance_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the distance per bin of the complete Hess diagrams between catalogs
         difference_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the absolute difference in number of stars per bin of the complete Hess diagrams between catalogs
-        quocient_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the quocient of the number of stars per bin of the complete Hess diagrams between catalogs
         output : str or False --> directory of the output file of the plot
         show : boolean --> wether you want the plot to be displayed or not
-        titles : list --> titles of the five different columns of the plot
+        titles : list --> titles of the four different columns of the plot
         limits : list or 'auto' --> upper limits of the plots in each one of the four colour bars or set to 'auto'
         '''
 
@@ -823,13 +832,12 @@ class compare_hess_diagrams:
 
         fig = plt.figure(figsize=(22, 9))
         fig.tight_layout()
-        axs = fig.subplots(nLatbins, len(titles), gridspec_kw={'width_ratios': [1, 1, 1.25, 1.25, 1.25]})
+        axs = fig.subplots(nLatbins, len(titles), gridspec_kw={'width_ratios': [1, 1, 1.25, 1.25]})
 
         if limits=='auto':
             limits_hess = max(np.array(catalog1_cmd).max(), np.array(catalog2_cmd).max())
             limits_dist = max([abs(np.quantile(distance_cmd, 0.01)), abs(np.quantile(distance_cmd, 0.99))])
             limits_diff = max([abs(np.quantile(difference_cmd, 0.01)), abs(np.quantile(difference_cmd, 0.99))])
-            max_lim = max([abs(np.log10(np.quantile(quocient_cmd, 0.01))), abs(np.log10(np.quantile(quocient_cmd, 0.99)))])
         else:
             if limits[0]=='auto':
                 limits_hess = max(np.array(catalog1_cmd).max(), np.array(catalog2_cmd).max())
@@ -843,11 +851,6 @@ class compare_hess_diagrams:
                 limits_diff = max([abs(np.quantile(difference_cmd, 0.01)), abs(np.quantile(difference_cmd, 0.99))])
             else:
                 limits_diff = limits[2] 
-            if limits[3]=='auto':
-                max_lim = max([abs(np.log10(np.quantile(quocient_cmd, 0.01))), abs(np.log10(np.quantile(quocient_cmd, 0.99)))])
-            else:
-                max_lim = np.log10(limits[3])
-        limits_quoc = [10**(-max_lim), 10**(max_lim)]
 
         for lon in range(nLonbins):
             for lat in range(nLatbins):
@@ -899,12 +902,6 @@ class compare_hess_diagrams:
                         hess_diff = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap3, aspect="auto", norm=norm_diff)
                         hess_diff.set_clim(-limits_diff, limits_diff)
 
-                    elif col==4:
-                        CMD = quocient_cmd[lon][lat].T
-                        norm_quoc = colors.LogNorm(vmin=limits_quoc[0], vmax=limits_quoc[1])
-                        hess_quoc = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap3, aspect="auto", norm=norm_quoc)
-                        hess_quoc.set_clim(limits_quoc[0], limits_quoc[1])
-
             cax = fig.add_axes([0.065, 0.130, 0.015, 0.75])
             cb = fig.colorbar(hess_bgmfast, cax=cax, norm=norm_hess)
             cb.set_label(r"$\log(N_\star)$")
@@ -917,13 +914,11 @@ class compare_hess_diagrams:
             cb3 = fig.colorbar(hess_diff, ax=axs[:, 3], norm=norm_diff, aspect=30, ticklocation='left')
             #cb3.set_label(r"$N_\star$")
 
-            cb4 = fig.colorbar(hess_quoc, ax=axs[:, 4], norm=norm_quoc, aspect=30)
-            cb4.set_label(r'$R$')
-
         if output!=False:
             fig.savefig(output, dpi=300)
         if show:
             plt.show()
+        plt.close()
 
 
     def compute_distance(self, catalog2_data, catalog1_data):
@@ -946,6 +941,75 @@ class compare_hess_diagrams:
 
         return distance
     
+    
+    def build_mass_age_space(self, data, mass_range, mass_bins, vrange='auto', y_tick_labels = ['SFH0', 'SFH1', 'SFH2',  'SFH3', 'SFH4', 'SFH5', 'SFH6', 'SFH7', 'SFH8', 'SFH9', 'SFH10', 'SFH9T', 'SFH10T', 'SFH11T', 'SFH12T'], show=True, output=False):
+        
+        from_mass_to_bins = lambda mass: int((mass - self.bgmfast_sim.x1)/self.bgmfast_sim.mass_step) + 1
+        
+        y_hist = [sum(data[i]) for i in range(len(data))]
+        x_hist = [sum([data[j][i] for j in range(len(data))]) for i in range(len(data[0]))] 
+        
+        fig = plt.figure(figsize=(18, 6))
+        gs = fig.add_gridspec(2, 2,  width_ratios=(12, 1), height_ratios=(1, 4), left=0.1, right=0.9, bottom=0.1, top=0.9, wspace=0.02, hspace=0.05)
+        
+        ax = fig.add_subplot(gs[1, 0])
+        
+        if vrange=='auto':
+            norm = colors.LogNorm(vmin=1e-1, vmax=data.max()*4/5)
+            mass_age = ax.imshow(data, cmap='gist_stern_r', aspect='auto', norm=norm)
+        elif vrange[0]=='auto':
+            norm = colors.LogNorm(vmin=1e-1, vmax=vrange[1])
+            mass_age = ax.imshow(data, cmap='gist_stern_r', aspect='auto', norm=norm)
+        elif vrange[1]=='auto':
+            norm = colors.LogNorm(vmin=vrange[0], vmax=data.max()*4/5)
+            mass_age = ax.imshow(data, cmap='gist_stern_r', aspect='auto', norm=norm)
+        else:
+            norm = colors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+            mass_age = ax.imshow(data, cmap='gist_stern_r', aspect='auto', norm=norm)
+                       
+        cax = fig.add_axes([0.03, 0.11, 0.01, 0.6])
+        fig.colorbar(mass_age, cax=cax, norm=norm)
+        cax.yaxis.set_label_position("left")
+        cax.yaxis.set_ticks_position("left")
+        
+        ax.set_xlabel('Mass')
+        ax.set_ylabel('SFH')
+        
+        x_tick_labels = [round(i, 1) for i in np.linspace(mass_range[0], mass_range[1], mass_bins)]
+        x_tick_labels_bin = [from_mass_to_bins(i) for i in x_tick_labels]
+        ax.set_xticks(ticks=x_tick_labels_bin, labels=x_tick_labels)
+        ax.set_yticks(ticks=np.arange(len(y_tick_labels)), labels=y_tick_labels)
+        
+        ax.set_xlim([from_mass_to_bins(mass_range[0]), from_mass_to_bins(mass_range[1])])
+        ax.set_ylim([len(y_tick_labels), -1])
+        
+        ax.vlines(from_mass_to_bins(self.bgmfast_sim.x2_ms), list(range(len(data)))[0], list(range(len(data)))[-1], colors='grey', linestyle='dashed', linewidths=0.5)
+        ax.vlines(from_mass_to_bins(self.bgmfast_sim.x3_ms), list(range(len(data)))[0], list(range(len(data)))[-1], colors='grey', linestyle='dashed', linewidths=0.5)
+        ax.grid(axis='x', linewidth=0.3)
+        
+        ax_histx = fig.add_subplot(gs[0, 0], sharex=ax)
+        ax_histy = fig.add_subplot(gs[1, 1], sharey=ax)
+        
+        ax_histx.tick_params(axis="x", labelbottom=False)
+        ax_histy.tick_params(axis="y", labelleft=False)
+        
+        ax_histx.stairs(x_hist)
+        ax_histy.stairs(y_hist, orientation='horizontal')
+        
+        ax_histx.set_title('Present-day mass function', fontsize=10)
+        ax_histy.text(1.15, 0.5, 'Present-day age distribution', fontsize=10, rotation=-90, ha='center', va='center', transform=ax_histy.transAxes)
+        
+        if output!=False:
+            fig.savefig(output, dpi=300)
+        if show:
+            plt.show()
+        plt.close()
+        
+        total_num_stars = data.sum()
+        print('Total number of stars:', data.sum())
+        
+        return total_num_stars
+
     
 def cmd_to_bins_table(bgmfast_cmd, output_file):
     '''
