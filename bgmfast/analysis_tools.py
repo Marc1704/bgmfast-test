@@ -762,14 +762,18 @@ class compare_hess_diagrams:
         
         Output parameters
         -----------------
-        catalog_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram
+        catalog_cmd : numpy array --> 4-dimensional numpy array (Hess diagram + latitude + longitude) containing the complete Hess diagram only showing those points with a number of stars larger than the minimum
         catalog_data : numpy array --> 4-dimensional numpy array with the Hess diagrams corresponding to each one of the longitude and latitude ranges
         '''
         
         self.bgmfast_sim.read_catalog(filename_catalog, colnames, Gmax)
         self.bgmfast_sim.generate_catalog_cmd()
-        catalog_cmd = self.bgmfast_sim.return_cmd()[0]
+        catalog_cmd_orig = self.bgmfast_sim.return_cmd()[0]
         catalog_data = self.bgmfast_sim.return_cmd()[1]
+        
+        dist_threshold = parameters.distance_parameters['dist_thresh'].value
+        
+        catalog_cmd = np.array([[[[0 if catalog_cmd_orig[lon][lat][i][j]<dist_threshold else catalog_cmd_orig[lon][lat][i][j] for j in range(len(catalog_cmd_orig[lon][lat][i]))] for i in range(len(catalog_cmd_orig[lon][lat]))] for lat in range(len(catalog_cmd_orig[lon]))] for lon in range(len(catalog_cmd_orig))])
         
         return catalog_cmd, catalog_data
 
@@ -821,6 +825,8 @@ class compare_hess_diagrams:
         acc_parameters = parameters.acc_parameters
         nLonbins = acc_parameters['nLonbins'].value
         nLatbins = acc_parameters['nLatbins'].value
+        
+        dist_threshold = parameters.distance_parameters['dist_thresh'].value
 
         binning_parameters = parameters.binning_parameters
         Xmin = binning_parameters['Xmin'].value
@@ -880,15 +886,15 @@ class compare_hess_diagrams:
                     axs[lat, col].set_ylim(Ymax, Ymin)
                     if col==0:
                         CMD = np.log10(catalog1_cmd[lon][lat]).T
-                        norm_hess = colors.Normalize(vmin=0, vmax=np.log10(limits_hess))
+                        norm_hess = colors.Normalize(vmin=np.log10(dist_threshold), vmax=np.log10(limits_hess))
                         hess_catalog = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap, aspect="auto", norm=norm_hess)
-                        hess_catalog.set_clim(0, np.log10(limits_hess))
+                        hess_catalog.set_clim(np.log10(dist_threshold), np.log10(limits_hess))
 
                     elif col==1:
                         CMD = np.log10(catalog2_cmd[lon][lat]).T
-                        norm_hess = colors.Normalize(vmin=0, vmax=np.log10(limits_hess))
+                        norm_hess = colors.Normalize(vmin=np.log10(dist_threshold), vmax=np.log10(limits_hess))
                         hess_bgmfast = axs[lat, col].imshow(CMD, extent=extent, interpolation="nearest", cmap=cmap, aspect="auto", norm=norm_hess)
-                        hess_bgmfast.set_clim(0, np.log10(limits_hess))
+                        hess_bgmfast.set_clim(np.log10(dist_threshold), np.log10(limits_hess))
 
                     elif col==2:
                         CMD = abs(distance_cmd[lon][lat]).T
